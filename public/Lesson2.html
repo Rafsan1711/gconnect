@@ -1,0 +1,72 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learn Chess</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }body {
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  font-family: 'Balqis', sans-serif;
+  background-color: #121212;
+  color: white;
+}
+
+button {
+height: 60px;
+width: 140px;
+  margin: 20px;
+  padding: 10px 20px;
+  font-size: 18px;
+  border: none;
+  border-radius: 20px;
+  background-color: #ffffffcc;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #ffffff;
+}
+  </style>
+</head>
+<body>
+  <button id="nextBtn">Next</button>  <script>
+    const images = [
+      'Images/lesson1.png',
+      'Images/lesson2.png',
+      'Images/lesson3.png',
+      'Images/lesson4.png',
+      'Images/lesson5.png',
+      'Images/lesson6.png',
+      'Images/lesson8.png',
+      'Images/lesson9.png',
+      'Images/lesson10.png'
+    ];
+
+    let index = 0;
+    const body = document.body;
+    const nextBtn = document.getElementById('nextBtn');
+
+    function updateBackground() {
+      body.style.backgroundImage = `url('${images[index]}')`;
+    }
+
+    nextBtn.addEventListener('click', () => {
+      if (index < images.length - 1) {
+        index++;
+        updateBackground();
+      }
+    });
+
+    updateBackground();
+  </script>
+  <h2>Coming soon....</h2></body>
+</html>
