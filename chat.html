@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp Clone</title>
+  <style>
+    /* ===== Reset & Base ===== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #ece5dd; }
+    .app { display: flex; height: 100vh; overflow: hidden; }
+
+    /* ===== Sidebar ===== */
+    .sidebar { width: 30%; background: #ffffff; border-right: 1px solid #ccc; display: flex; flex-direction: column; transition: width .3s; }
+    #header { background: #075e54; color: #fff; padding: 16px; font-size: 1.2rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+    #header button { background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
+    #loginBtn { margin: 12px; padding: 12px; background: #25d366; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+    #userInfo { margin: 0 12px 12px; font-size: 0.9rem; color: #555; }
+    #searchInput { margin: 0 12px; padding: 8px; width: calc(100% - 24px); border-radius: 20px; border: 1px solid #ddd; }
+    .list-title { margin: 12px; font-weight: bold; color: #333; }
+    .chatlist { flex: 1; overflow-y: auto; margin-top: 8px; }
+    .user-item, .group-item { padding: 12px; border-bottom: 1px solid #f2f2f2; cursor: pointer; display: flex; align-items: center; }
+    .user-item:hover, .group-item:hover { background: #f6f6f6; }
+    .user-item .avatar, .group-item .avatar { width: 36px; height: 36px; border-radius: 50%; background: #bbb; margin-right: 12px; }
+    .user-item .name, .group-item .name { font-size: 1rem; color: #333; flex: 1; }
+
+    /* ===== Chat Section ===== */
+    .chat-section { width: 70%; display: flex; flex-direction: column; }
+    #chatHeader { background: #075e54; color: #fff; padding: 12px 16px; font-size: 1rem; font-weight: bold; display: flex; align-items: center; }
+    #chatHeader .avatar { width: 32px; height: 32px; border-radius: 50%; background: #bbb; margin-right: 12px; }
+    #messages { flex: 1; padding: 16px; overflow-y: auto; background-color: #e5ddd5; }
+    .message { width: fit-content; max-width: 70%; margin-bottom: 12px; padding: 10px 12px; position: relative; word-wrap: break-word; }
+    .message .sender { font-size: 0.75rem; font-weight: bold; margin-bottom: 2px; }
+    .message .time { font-size: 0.7rem; color: #666; position: absolute; bottom: 0px; right: 8px; }
+    .incoming { background: #fff; border-radius: 0 8px 8px 8px; align-self: flex-start; }
+    .outgoing { background: #dcf8c6; border-radius: 8px 0 8px 8px; align-self: flex-end; }
+
+    .input-area { display: flex; padding: 12px; background: #f0f0f0; }
+    #messageInput { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ccc; outline: none; }
+    #sendBtn { margin-left: 8px; border: none; background: #075e54; color: #fff; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; font-size: 1rem; }
+
+    /* ===== Modal ===== */
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; }
+    .modal.active { display: flex; }
+    .modal-content { background: #fff; border-radius: 8px; width: 90%; max-width: 400px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .modal-header h2 { font-size: 1.1rem; }
+    .modal-header button { background: transparent; border: none; font-size: 1.2rem; cursor: pointer; }
+    .member-list { max-height: 200px; overflow-y: auto; margin-bottom: 12px; }
+    .member-item { display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #eee; }
+    .member-item label { flex: 1; margin-left: 8px; }
+    .modal-footer { text-align: right; }
+    .modal-footer button { padding: 8px 16px; border: none; background: #075e54; color: #fff; border-radius: 4px; cursor: pointer; }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 800px) { .sidebar { width: 40%; } .chat-section { width: 60%; } }
+    @media (max-width: 600px) { .app { flex-direction: column; } .sidebar { width: 100%; height: 50vh; } .chat-section { width: 100%; height: 50vh; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar">
+      <div id="header">GConnect <button id="groupBtn">&#43;</button></div>
+      <button id="loginBtn">Sign in with Google</button>
+      <div id="userInfo"></div>
+      <input type="text" id="searchInput" placeholder="Search users...">
+      <div class="list-title">Chats</div>
+      <div id="chatList" class="chatlist"></div>
+    </div>
+    <div class="chat-section">
+      <div id="chatHeader"><div class="avatar"></div><span id="chatName">Select a chat</span></div>
+      <div id="messages"></div>
+      <div class="input-area">
+        <input type="text" id="messageInput" placeholder="Type a message...">
+        <button id="sendBtn">&#9658;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Group Modal -->
+  <div id="groupModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Create Group</h2>
+        <button id="closeModal">&times;</button>
+      </div>
+      <input type="text" id="groupNameInput" placeholder="Group name" style="width:100%; padding:8px; margin-bottom:12px; border:1px solid #ddd; border-radius:4px;">
+      <div class="member-list" id="memberList"></div>
+      <div class="modal-footer">
+        <button id="createGroup">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDQDghMUXcjcLufG3xU94pUx-J0r9TUu6Q",
+  authDomain: "gconnect-7fe65.firebaseapp.com",
+  databaseURL: "https://gconnect-7fe65-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "gconnect-7fe65",
+  storageBucket: "gconnect-7fe65.firebasestorage.app",
+  messagingSenderId: "484729292789",
+  appId: "1:484729292789:web:8e5391b09d3581c90b02bc"
+};
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    const loginBtn = document.getElementById('loginBtn');
+    const userInfo = document.getElementById('userInfo');
+    const searchInput = document.getElementById('searchInput');
+    const chatList = document.getElementById('chatList');
+    const chatNameEl = document.getElementById('chatName');
+    const messagesEl = document.getElementById('messages');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const groupBtn = document.getElementById('groupBtn');
+    const groupModal = document.getElementById('groupModal');
+    const closeModal = document.getElementById('closeModal');
+    const memberList = document.getElementById('memberList');
+
+    let currentUser = null;
+    let currentChatId = null;
+
+    loginBtn.addEventListener('click', () => auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()));
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        userInfo.textContent = 'Logged in as ' + user.displayName;
+        loginBtn.style.display = 'none';
+        loadChats();
+      }
+    });
+
+    function loadChats() {
+      chatList.innerHTML = '';
+      // Load users
+      db.ref('users').on('value', snap => {
+        chatList.innerHTML = '';
+        snap.forEach(child => {
+          if (child.key !== currentUser.uid) {
+            const div = document.createElement('div');
+            div.classList.add('user-item');
+            div.innerHTML = '<div class="avatar"></div><div class="name">' + child.val().name + '</div>';
+            div.onclick = () => openChat(child.key, child.val().name, false);
+            chatList.appendChild(div);
+          }
+        });
+        // Load groups
+        db.ref('groups').on('value', gsnap => {
+          gsnap.forEach(g => {
+            const grp = g.val();
+            if (grp.members && grp.members[currentUser.uid]) {
+              const div = document.createElement('div');
+              div.classList.add('group-item');
+              div.innerHTML = '<div class="avatar"></div><div class="name">' + grp.name + '</div>';
+              div.onclick = () => openChat(g.key, grp.name, true);
+              chatList.appendChild(div);
+            }
+          });
+        });
+      });
+    }
+
+    searchInput.addEventListener('input', () => {
+      const term = searchInput.value.toLowerCase();
+      document.querySelectorAll('#chatList .user-item, #chatList .group-item')
+        .forEach(el => el.style.display = el.querySelector('.name').textContent.toLowerCase().includes(term) ? 'flex' : 'none');
+    });
+
+    function openChat(id, name, isGroup) {
+      currentChatId = id;
+      chatNameEl.textContent = name;
+      messagesEl.innerHTML = '';
+      const path = isGroup ? 'groups/' + id + '/chats' : 'chats/' + [currentUser.uid, id].sort().join('_');
+      db.ref(path).off();
+      db.ref(path).on('child_added', snap => {
+        const msg = snap.val();
+        const div = document.createElement('div');
+        const isOutgoing = msg.sender === currentUser.displayName;
+        div.classList.add('message', isOutgoing ? 'outgoing' : 'incoming');
+        const senderLabel = isGroup && !isOutgoing ? '<div class="sender">' + msg.sender + '</div>' : '';
+        const time = new Date(msg.timestamp).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+        div.innerHTML = senderLabel + msg.text + '<div class="time">' + time + '</div>';
+        messagesEl.appendChild(div);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      });
+    }
+
+    sendBtn.addEventListener('click', () => {
+      const text = messageInput.value.trim();
+      if (!text || !currentChatId) return;
+      const payload = { sender: currentUser.displayName, text, timestamp: firebase.database.ServerValue.TIMESTAMP };
+      // Determine path
+      const path = currentChatId.startsWith('group_')
+        ? 'groups/' + currentChatId + '/chats'
+        : 'chats/' + [currentUser.uid, currentChatId].sort().join('_');
+      db.ref(path).push(payload);
+      messageInput.value = '';
+    });
+
+    // Group modal
+    groupBtn.addEventListener('click', () => { memberList.innerHTML = ''; loadMembers(); groupModal.classList.add('active'); });
+    closeModal.addEventListener('click', () => groupModal.classList.remove('active'));
+    function loadMembers() {
+      db.ref('users').once('value', snap => {
+        snap.forEach(child => {
+          if (child.key !== currentUser.uid) {
+            const div = document.createElement('div');
+            div.classList.add('member-item');
+            div.innerHTML = '<input type="checkbox" value="' + child.key + '"><label>' + child.val().name + '</label>';
+            memberList.appendChild(div);
+          }
+        });
+      });
+    }
+    document.getElementById('createGroup').onclick = () => {
+      const name = document.getElementById('groupNameInput').value.trim();
+      if (!name) return;
+      const members = {};
+      members[currentUser.uid] = true;
+      memberList.querySelectorAll('input:checked').forEach(cb => members[cb.value] = true);
+      const gid = 'group_' + Date.now();
+      db.ref('groups/' + gid).set({ name, members });
+      groupModal.classList.remove('active');
+      loadChats();
+    };
+  </script>
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
+</body>
+</html>
