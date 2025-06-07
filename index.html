@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Online Multiplayer Chess</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>♟️ Online Multiplayer Chess ♟️</h1>
+
+  <!-- Captured White Pieces (Top) -->
+  <div id="captured-white" class="captured"></div>
+
+  <!-- Black's Clock -->
+  <div class="clock-container">
+    <div id="black-clock" class="clock active-clock">10:00</div>
+  </div>
+
+  <!-- Board Container -->
+  <div id="board-container"></div>
+
+  <!-- White's Clock -->
+  <div class="clock-container">
+    <div id="white-clock" class="clock inactive-clock">10:00</div>
+  </div>
+
+  <!-- Captured Black Pieces (Bottom) -->
+  <div id="captured-black" class="captured"></div>
+
+  <!-- Waiting Modal -->
+  <div id="waiting-modal">
+    <div class="modal-content">
+      <div>Waiting for opponent…</div>
+      <div class="spinner">⏳</div>
+    </div>
+  </div>
+
+  <!-- Winner Modal -->
+  <div id="winner-modal">
+    <div class="modal-content">
+      <h2 id="winner-text">Winner: </h2>
+      <button id="modal-restart-btn">Play Again</button>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+  <!-- Main game script -->
+  <script src="script.js"></script>
+</body>
+</html>
