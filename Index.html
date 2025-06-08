@@ -1,268 +1,365 @@
-<!DOCTYPE html><html lang="en">  <head>  
-  <meta charset="UTF-8" />  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
-  <title>GConnect Chat App</title>  
-  <style>  
-    /* ==== Reset & Base ==== */  
-    * { box-sizing: border-box; margin: 0; padding: 0; }  
-    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #ece5dd; height: 100vh; }  
-    .app { display: flex; height: 100%; }/* ==== Sidebar ==== */  
-.sidebar { width: 30%; background: #fff; border-right: 1px solid #ccc; display: flex; flex-direction: column; transition: width .3s; }  
-#header { background: #075e54; color: #fff; padding: 16px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }  
-#header button { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }  
-#loginBtn, .add-contact-btn, .confirm-btn { margin: 12px; padding: 12px; border: none; border-radius: 4px; cursor: pointer; }  
-#loginBtn, .confirm-btn { background: #25d366; color: #fff; }  
-.add-contact-btn { background: #34b7f1; color: #fff; }  
-#userInfo { margin: 0 12px 12px; font-size: .9rem; color: #555; }  
-#searchInput, #contactIdInput { margin: 0 12px; padding: 8px; width: calc(100% - 24px); border-radius: 20px; border: 1px solid #ddd; }  
-.list-title { margin: 12px; font-weight: bold; color: #333; }  
-.chatlist { flex: 1; overflow-y: auto; margin-top: 8px; }  
-.user-item, .group-item { padding: 12px; border-bottom: 1px solid #f2f2f2; cursor: pointer; display: flex; align-items: center; }  
-.user-item:hover, .group-item:hover { background: #f6f6f6; }  
-.avatar { width: 36px; height: 36px; border-radius: 50%; background: #bbb; margin-right: 12px; }  
-.name { font-size: 1rem; color: #333; flex: 1; }  /* ==== Chat Section ==== */
-.chat-section { width: 70%; display: flex; flex-direction: column; }
-#chatHeader { background: #075e54; color: #fff; padding: 12px 16px; display: flex; align-items: center; }
-#chatHeader .avatar { width: 32px; height: 32px; border-radius: 50%; background: #bbb; margin-right: 12px; }
-#chatHeader span { font-weight: bold; }
-#messages { flex: 1; padding: 16px; overflow-y: auto; background-color: #e5ddd5; }
-.message { max-width: 70%; margin-bottom: 16px; padding: 10px 12px 20px; position: relative; word-wrap: break-word; }
-.sender { font-size: .75rem; font-weight: bold; margin-bottom: 4px; }
-.time { font-size: .7rem; color: #666; position: absolute; bottom: 4px; right: 8px; }
-.incoming { background: #fff; border-radius: 0 8px 8px 8px; align-self: flex-start; }
-.outgoing { background: #dcf8c6; border-radius: 8px 0 8px 8px; align-self: flex-end; }
-.input-area { display: flex; padding: 12px; background: #f0f0f0; }
-#messageInput { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ccc; outline: none; }
-#sendBtn { margin-left: 8px; background: #075e54; color: #fff; border-radius: 50%; width: 40px; height: 40px; border: none; cursor: pointer; }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GConnect Chat App</title>
+  <style>
+    /* ==== Reset & Base ==== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #ece5dd; height: 100vh; }
+    .app { display: flex; height: 100%; }
 
-/* ==== Delete Menu ==== */
-#deleteMenu { position: absolute; display: none; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.2); border-radius: 4px; z-index: 1000; }
-#deleteMenu button { width: 100%; padding: 8px 12px; background: none; border: none; text-align: left; cursor: pointer; }
-#deleteMenu button:hover { background: #f0f0f0; }
+    /* ==== Sidebar ==== */
+    .sidebar { width: 30%; background: #fff; border-right: 1px solid #ccc; display: flex; flex-direction: column; transition: width .3s; }
+    #header { background: #075e54; color: #fff; padding: 16px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+    #header button { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
+    #loginBtn, .add-contact-btn, .confirm-btn { margin: 12px; padding: 12px; border: none; border-radius: 4px; cursor: pointer; }
+    #loginBtn, .confirm-btn { background: #25d366; color: #fff; }
+    .add-contact-btn { background: #34b7f1; color: #fff; }
+    #userInfo { margin: 0 12px 12px; font-size: .9rem; color: #555; }
+    #searchInput, #contactIdInput { margin: 0 12px; padding: 8px; width: calc(100% - 24px); border-radius: 20px; border: 1px solid #ddd; }
+    .list-title { margin: 12px; font-weight: bold; color: #333; }
+    .chatlist { flex: 1; overflow-y: auto; margin-top: 8px; }
+    .user-item, .group-item { padding: 12px; border-bottom: 1px solid #f2f2f2; cursor: pointer; display: flex; align-items: center; }
+    .user-item:hover, .group-item:hover { background: #f6f6f6; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: #bbb; margin-right: 12px; }
+    .name { font-size: 1rem; color: #333; flex: 1; }
 
-/* ==== Modals ==== */
-.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; }
-.modal.active { display: flex; }
-.modal-content { background: #fff; border-radius: 8px; width: 90%; max-width: 400px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: relative; text-align: center; }
-.modal-content h2 { margin-bottom: 12px; }
-.close-btn { position: absolute; top: 12px; right: 16px; background: transparent; border: none; font-size: 1.2rem; cursor: pointer; }
-.alert-message { color: red; font-size: 14px; margin-top: 10px; min-height: 18px; }
+    /* ==== Chat Section ==== */
+    .chat-section { width: 70%; display: flex; flex-direction: column; }
+    #chatHeader { background: #075e54; color: #fff; padding: 12px 16px; display: flex; align-items: center; }
+    #chatHeader .avatar { width: 32px; height: 32px; border-radius: 50%; background: #bbb; margin-right: 12px; }
+    #chatHeader span { font-weight: bold; }
+    #messages { flex: 1; padding: 16px; overflow-y: auto; background-color: #e5ddd5; }
+    .message { max-width: 70%; margin-bottom: 16px; padding: 10px 12px 24px; position: relative; word-wrap: break-word; }
+    .sender { font-size: .75rem; font-weight: bold; margin-bottom: 4px; }
+    .time { font-size: .7rem; color: #666; position: absolute; bottom: 4px; right: 8px; }
+    .incoming { background: #fff; border-radius: 0 8px 8px 8px; align-self: flex-start; }
+    .outgoing { background: #dcf8c6; border-radius: 8px 0 8px 8px; align-self: flex-end; }
+    .input-area { display: flex; padding: 12px; background: #f0f0f0; }
+    #messageInput { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ccc; outline: none; }
+    #sendBtn { margin-left: 8px; background: #075e54; color: #fff; border-radius: 50%; width: 40px; height: 40px; border: none; cursor: pointer; }
 
-@media (max-width: 800px) { .sidebar { width: 40%; } .chat-section { width: 60%; } }
-@media (max-width: 600px) { .app { flex-direction: column; } .sidebar { width: 100%; height: 50vh; } .chat-section { width:100%; height:50vh; } }
+    /* ==== Delete Menu ==== */
+    #deleteMenu { position: absolute; display: none; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.2); border-radius: 4px; z-index: 1000; }
+    #deleteMenu button { width: 100%; padding: 8px 12px; background: none; border: none; text-align: left; cursor: pointer; }
+    #deleteMenu button:hover { background: #f0f0f0; }
 
-  </style>  
-</head>  
-<body>  
-  <div class="app">  
-    <div class="sidebar">  
-      <div id="header">GConnect <button id="groupBtn">+</button></div>  
-      <button id="loginBtn">Sign in with Google</button>  
-      <div id="userInfo"></div>  
-      <input type="text" id="searchInput" placeholder="Search chats..." />  
-      <button class="add-contact-btn" id="openAddContactBtn">➕ Add Contact</button>  
-      <div class="list-title">Chats</div>  
-      <div id="chatList" class="chatlist"></div>  
-    </div><div class="chat-section">  
-  <div id="chatHeader"><div class="avatar"></div><span id="chatName">Select a chat</span></div>  
-  <div id="messages"></div>  
-  <div class="input-area">  
-    <input type="text" id="messageInput" placeholder="Type a message..." />  
-    <button id="sendBtn">▶</button>  
-  </div>  
-</div>    </div>  <!-- Add Contact Modal -->  <div id="addContactModal" class="modal">  
-    <div class="modal-content">  
-      <button class="close-btn" onclick="closeAddContactModal()">&times;</button>  
-      <h2>Add Contact</h2>  
-      <input type="text" id="contactIdInput" placeholder="Enter User ID" />  
-      <button class="confirm-btn" onclick="addContact()">Add</button>  
-      <p id="contactAlert" class="alert-message"></p>  
-    </div>  
-  </div>  <!-- Group Modal -->  <div id="groupModal" class="modal">  
-    <div class="modal-content">  
-      <button class="close-btn" onclick="closeGroupModal()">&times;</button>  
-      <h2>Create Group</h2>  
-      <input id="groupNameInput" placeholder="Group name" style="width:100%; padding:8px; margin-bottom:12px; border:1px solid #ddd; border-radius:4px;" />  
-      <div id="memberList" class="member-list" style="max-height:200px; overflow-y:auto; margin-bottom:12px;"></div>  
-      <button class="confirm-btn" id="createGroupBtn">Create</button>  
-    </div>  
-  </div>  <!-- Delete Context Menu -->  <div id="deleteMenu">  
-    <button id="deleteForMe">Delete for me</button>  
-    <button id="deleteForEveryone">Delete for everyone</button>  
-  </div>  <!-- Firebase SDK -->  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>  <script>  
-    const firebaseConfig = {  
-      apiKey: "AIzaSyDQDghMUXcjcLufG3xU94pUx-J0r9TUu6Q",  
-      authDomain: "gconnect-7fe65.firebaseapp.com",  
-      databaseURL: "https://gconnect-7fe65-default-rtdb.asia-southeast1.firebasedatabase.app",  
-      projectId: "gconnect-7fe65",  
-      storageBucket: "gconnect-7fe65.appspot.com",  
-      messagingSenderId: "484729292789",  
-      appId: "1:484729292789:web:8e5391b09d3581c90b02bc"  
-    };  
-    firebase.initializeApp(firebaseConfig);  
-    const auth = firebase.auth(), db = firebase.database();  // Element references  
-const loginBtn = document.getElementById('loginBtn'),  
-      userInfo = document.getElementById('userInfo'),  
-      searchInput = document.getElementById('searchInput'),  
-      openAddContactBtn = document.getElementById('openAddContactBtn'),  
-      contactIdInput = document.getElementById('contactIdInput'),  
-      contactAlert = document.getElementById('contactAlert'),  
-      chatList = document.getElementById('chatList'),  
-      chatName = document.getElementById('chatName'),  
-      messagesEl = document.getElementById('messages'),  
-      messageInput = document.getElementById('messageInput'),  
-      sendBtn = document.getElementById('sendBtn'),  
-      groupBtn = document.getElementById('groupBtn'),  
-      groupModal = document.getElementById('groupModal'),  
-      memberList = document.getElementById('memberList'),  
-      createGroupBtn = document.getElementById('createGroupBtn'),  
-      deleteMenu = document.getElementById('deleteMenu'),  
-      delForMe = document.getElementById('deleteForMe'),  
-      delForAll = document.getElementById('deleteForEveryone');  
+    /* ==== Modals ==== */
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; }
+    .modal.active { display: flex; }
+    .modal-content { background: #fff; border-radius: 8px; width: 90%; max-width: 400px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: relative; text-align: center; }
+    .modal-content h2 { margin-bottom: 12px; }
+    .close-btn { position: absolute; top: 12px; right: 16px; background: transparent; border: none; font-size: 1.2rem; cursor: pointer; }
+    .alert-message { color: red; font-size: 14px; margin-top: 10px; min-height: 18px; }
 
-let currentUser = null, currentChatId = null, isGroupChat = false, contacts = {};  
+    @media (max-width: 800px) { .sidebar { width: 40%; } .chat-section { width: 60%; } }
+    @media (max-width: 600px) { .app { flex-direction: column; } .sidebar { width: 100%; height: 50vh; } .chat-section { width:100%; height:50vh; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar">
+      <div id="header">GConnect <button id="groupBtn">+</button></div>
+      <button id="loginBtn">Sign in with Google</button>
+      <div id="userInfo"></div>
+      <input type="text" id="searchInput" placeholder="Search chats..." />
+      <button class="add-contact-btn" id="openAddContactBtn">➕ Add Contact</button>
+      <div class="list-title">Chats</div>
+      <div id="chatList" class="chatlist"></div>
+    </div>
+    <div class="chat-section">
+      <div id="chatHeader">
+        <div class="avatar"></div><span id="chatName">Select a chat</span>
+      </div>
+      <div id="messages"></div>
+      <div class="input-area">
+        <input type="text" id="messageInput" placeholder="Type a message..." />
+        <button id="sendBtn">▶</button>
+      </div>
+    </div>
+  </div>
 
-// Authentication  
-loginBtn.onclick = () => auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());  
-auth.onAuthStateChanged(async user => {  
-  if (!user) return;  
-  currentUser = user;  
-  loginBtn.style.display = 'none';  
-  userInfo.textContent = 'Logged in as ' + user.displayName;  
+  <!-- Add Contact Modal -->
+  <div id="addContactModal" class="modal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeAddContactModal()">&times;</button>
+      <h2>Add Contact</h2>
+      <input type="text" id="contactIdInput" placeholder="Enter User UID" />
+      <button class="confirm-btn" onclick="addContact()">Add</button>
+      <p id="contactAlert" class="alert-message"></p>
+    </div>
+  </div>
 
-  // Load saved contacts  
-  const snap = await db.ref(`contacts/${user.uid}`).once('value');  
-  if (snap.exists()) Object.keys(snap.val()).forEach(uid => contacts[uid] = true);  
+  <!-- Group Modal -->
+  <div id="groupModal" class="modal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeGroupModal()">&times;</button>
+      <h2>Create Group</h2>
+      <input id="groupNameInput" placeholder="Group name" style="width:100%; padding:8px; margin-bottom:12px; border:1px solid #ddd; border-radius:4px;" />
+      <div id="memberList" class="member-list" style="max-height:200px; overflow-y:auto; margin-bottom:12px;"></div>
+      <button class="confirm-btn" id="createGroupBtn">Create</button>
+    </div>
+  </div>
 
-  loadChats();  
-});  
+  <!-- Delete Context Menu -->
+  <div id="deleteMenu">
+    <button id="deleteForMe">Delete for me</button>
+    <button id="deleteForEveryone">Delete for everyone</button>
+  </div>
 
-// Modal controls  
-openAddContactBtn.onclick = () => {  
-  contactAlert.style.display = 'none'; contactIdInput.value = '';  
-  document.getElementById('addContactModal').classList.add('active');  
-};  
-window.closeAddContactModal = () => document.getElementById('addContactModal').classList.remove('active');  
-window.closeGroupModal = () => groupModal.classList.remove('active');  
-window.onclick = e => {  
-  if (e.target.id === 'addContactModal') closeAddContactModal();  
-  if (e.target === groupModal) closeGroupModal();  
-};  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
-// Add Contact  
-async function addContact() {  
-  const id = contactIdInput.value.trim();  
-  if (!id) {  
-    contactAlert.style.color = 'red'; contactAlert.textContent = 'Please enter a User ID.';  
-    contactAlert.style.display = 'block'; return;  
-  }  
-  const snap = await db.ref(`users/${id}`).once('value');  
-  if (!snap.exists()) {  
-    contactAlert.style.color = 'red'; contactAlert.textContent = 'User ID not found.';  
-    contactAlert.style.display = 'block'; return;  
-  }  
-  await db.ref(`contacts/${currentUser.uid}/${id}`).set(true);  
-  contacts[id] = true;  
-  contactAlert.style.color = 'green'; contactAlert.textContent = 'Contact added!';  
-  contactAlert.style.display = 'block';  
-  loadChats();  
-  setTimeout(closeAddContactModal, 1200);  
-}  
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDQDghMUXcjcLufG3xU94pUx-J0r9TUu6Q",
+      authDomain: "gconnect-7fe65.firebaseapp.com",
+      databaseURL: "https://gconnect-7fe65-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "gconnect-7fe65",
+      storageBucket: "gconnect-7fe65.appspot.com",
+      messagingSenderId: "484729292789",
+      appId: "1:484729292789:web:8e5391b09d3581c90b02bc"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth(), db = firebase.database();
 
-// Load chats & groups  
-async function loadChats() {  
-  chatList.innerHTML = '';  
-  // One-on-one  
-  const usersSnap = await db.ref('users').once('value');  
-  usersSnap.forEach(child => {  
-    const uid = child.key; if (uid === currentUser.uid || !contacts[uid]) return;  
-    const div = document.createElement('div');  
-    div.className = 'user-item'; div.dataset.uid = uid;  
-    div.innerHTML = `<div class="avatar"></div><div class="name">${child.val().name}</div>`;  
-    div.onclick = () => openChat(uid, child.val().name, false);  
-    chatList.appendChild(div);  
-  });  
-  // Groups  
-  document.querySelectorAll('.group-item').forEach(n => n.remove());  
-  db.ref('groups').off('child_added');  
-  db.ref('groups').on('child_added', gsnap => {  
-    const g = gsnap.val(); if (!(g.members && g.members[currentUser.uid])) return;  
-    const div = document.createElement('div');  
-    div.className = 'group-item'; div.dataset.gid = gsnap.key;  
-    div.innerHTML = `<div class="avatar"></div><div class="name">${g.name}</div>`;  
-    div.onclick = () => openChat(gsnap.key, g.name, true);  
-    chatList.appendChild(div);  
-  });  
-}  
+    // Elements
+    const loginBtn         = document.getElementById('loginBtn'),
+          userInfoEl       = document.getElementById('userInfo'),
+          searchInput      = document.getElementById('searchInput'),
+          openAddContactBtn= document.getElementById('openAddContactBtn'),
+          contactIdInput   = document.getElementById('contactIdInput'),
+          contactAlert     = document.getElementById('contactAlert'),
+          chatList         = document.getElementById('chatList'),
+          chatNameEl       = document.getElementById('chatName'),
+          messagesEl       = document.getElementById('messages'),
+          messageInput     = document.getElementById('messageInput'),
+          sendBtn          = document.getElementById('sendBtn'),
+          groupBtn         = document.getElementById('groupBtn'),
+          groupModal       = document.getElementById('groupModal'),
+          memberList       = document.getElementById('memberList'),
+          createGroupBtn   = document.getElementById('createGroupBtn'),
+          deleteMenu       = document.getElementById('deleteMenu'),
+          delForMe         = document.getElementById('deleteForMe'),
+          delForAll        = document.getElementById('deleteForEveryone');
 
-// Send message  
-sendBtn.onclick = () => {  
-  const text = messageInput.value.trim(); if (!text || !currentChatId) return;  
-  const payload = { sender: currentUser.displayName, text, timestamp: firebase.database.ServerValue.TIMESTAMP };  
-  const path = isGroupChat ? `groups/${currentChatId}/chats` : `chats/${[currentUser.uid, currentChatId].sort().join('_')}`;  
-  db.ref(path).push(payload);  
-  messageInput.value = '';  
-};  
+    let currentUser = null, currentChatId = null, isGroupChat = false, contacts = {};
 
-// Open chat  
-function openChat(id, name, groupFlag) {  
-  currentChatId = id; isGroupChat = groupFlag;  
-  chatName.textContent = name; messagesEl.innerHTML = '';  
-  const path = groupFlag ? `groups/${id}/chats` : `chats/${[currentUser.uid, id].sort().join('_')}`;  
-  db.ref(path).off('child_added'); db.ref(path).on('child_added', snap => {  
-    const m = snap.val(); const div = document.createElement('div');  
-    div.className = m.sender === currentUser.displayName ? 'message outgoing' : 'message incoming';  
-    div.dataset.key = snap.key; div.dataset.path = path;  
-    attachDeleteHandlers(div);  
-    if (groupFlag && m.sender !== currentUser.displayName) div.innerHTML = `<div class="sender">${m.sender}</div>`;  
-    const time = new Date(m.timestamp).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });  
-    div.innerHTML += m.text + `<div class="time">${time}</div>`;  
-    messagesEl.appendChild(div); messagesEl.scrollTop = messagesEl.scrollHeight;  
-  });  
-}  
+    // --- Authentication ---
+    loginBtn.onclick = () => auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+    auth.onAuthStateChanged(async user => {
+      if (!user) return;
+      currentUser = user;
+      loginBtn.style.display = 'none';
+      // Show displayName + UID
+      userInfoEl.textContent = `Logged in as ${user.displayName} (${user.uid})`;
 
-// Delete handlers  
-function attachDeleteHandlers(el) {  
-  el.addEventListener('contextmenu', e => { e.preventDefault(); showDeleteMenu(e.pageX, e.pageY, el); });  
-  let timer;  
-  el.addEventListener('touchstart', e => { timer = setTimeout(() => showDeleteMenu(e.touches[0].pageX, e.touches[0].pageY, el), 600); });  
-  el.addEventListener('touchend', () => clearTimeout(timer));  
-}  
-function showDeleteMenu(x, y, el) {  
-  deleteMenu.style.display = 'block'; deleteMenu.style.top = y + 'px'; deleteMenu.style.left = x + 'px';  
-  deleteMenu.dataset.key = el.dataset.key; deleteMenu.dataset.path = el.dataset.path;  
-}  
-document.addEventListener('click', () => deleteMenu.style.display = 'none');  
-delForMe.onclick = () => {  
-  document.querySelector(`[data-key="${deleteMenu.dataset.key}"]`).remove(); deleteMenu.style.display = 'none';  
-};  
-delForAll.onclick = () => {  
-  db.ref(`${deleteMenu.dataset.path}/${deleteMenu.dataset.key}`).remove(); deleteMenu.style.display = 'none';  
-};  
+      // Load saved contacts
+      const snap = await db.ref(`contacts/${user.uid}`).once('value');
+      if (snap.exists()) Object.keys(snap.val()).forEach(uid => contacts[uid] = true);
 
-// Group modal  
-groupBtn.onclick = async () => {  
-  memberList.innerHTML = ''; const snap = await db.ref('users').once('value');  
-  snap.forEach(child => { const uid = child.key; if (uid === currentUser.uid || !contacts[uid]) return;  
-    const div = document.createElement('div');  
-    div.innerHTML = `<label><input type="checkbox" value="${uid}"> ${child.val().name}</label>`;  
-    memberList.appendChild(div);  
-  }); groupModal.classList.add('active');  
-};  
-createGroupBtn.onclick = async () => {  
-  const name = document.getElementById('groupNameInput').value.trim(); if (!name) return;  
-  const members = {}; members[currentUser.uid] = true;  
-  memberList.querySelectorAll('input:checked').forEach(cb => members[cb.value] = true);  
-  const gid = 'group_' + Date.now(); await db.ref(`groups/${gid}`).set({ name, members });  
-  closeGroupModal(); loadChats();  
-};  
+      loadChats();
+    });
 
-// Search filter  
-searchInput.addEventListener('input', () => {  
-  const term = searchInput.value.toLowerCase(); document.querySelectorAll('.user-item, .group-item')  
-    .forEach(el => el.style.display = el.querySelector('.name').textContent.toLowerCase().includes(term) ? 'flex' : 'none');  
-});
+    // --- Modal Controls ---
+    openAddContactBtn.onclick = () => {
+      contactAlert.style.display = 'none';
+      contactIdInput.value = '';
+      document.getElementById('addContactModal').classList.add('active');
+    };
+    window.closeAddContactModal = () => document.getElementById('addContactModal').classList.remove('active');
+    window.closeGroupModal      = () => groupModal.classList.remove('active');
+    window.onclick = e => {
+      if (e.target.id === 'addContactModal') closeAddContactModal();
+      if (e.target === groupModal) closeGroupModal();
+    };
 
-</script></body>
+    // --- Add Contact ---
+    async function addContact() {
+      const id = contactIdInput.value.trim();
+      if (!id) {
+        contactAlert.style.color = 'red';
+        contactAlert.textContent = 'Please enter a User UID.';
+        contactAlert.style.display = 'block';
+        return;
+      }
+      const snap = await db.ref(`users/${id}`).once('value');
+      if (!snap.exists()) {
+        contactAlert.style.color = 'red';
+        contactAlert.textContent = 'User UID not found.';
+        contactAlert.style.display = 'block';
+        return;
+      }
+      // Save to your contacts
+      await db.ref(`contacts/${currentUser.uid}/${id}`).set(true);
+      contacts[id] = true;
+      contactAlert.style.color = 'green';
+      contactAlert.textContent = 'Contact added!';
+      contactAlert.style.display = 'block';
+      loadChats();
+      setTimeout(closeAddContactModal, 1200);
+    }
 
-</html>
+    // --- Load Chats & Groups ---
+    async function loadChats() {
+      chatList.innerHTML = '';
+
+      // One-on-one users
+      const usersSnap = await db.ref('users').once('value');
+      usersSnap.forEach(child => {
+        const uid = child.key;
+        if (uid === currentUser.uid || !contacts[uid]) return;
+        const div = document.createElement('div');
+        div.className = 'user-item';
+        div.dataset.uid = uid;
+        div.innerHTML =
+          `<div class="avatar"></div>
+           <div class="name">${child.val().name} (${uid})</div>`;
+        div.onclick = () => openChat(uid, child.val().name, false);
+        chatList.appendChild(div);
+      });
+
+      // Groups
+      // Detach old listener & clear any duplicates
+      db.ref('groups').off('child_added');
+      db.ref('groups').on('child_added', gsnap => {
+        const g = gsnap.val();
+        if (!(g.members && g.members[currentUser.uid])) return;
+        // avoid duplicates
+        if (chatList.querySelector(`[data-gid="${gsnap.key}"]`)) return;
+        const div = document.createElement('div');
+        div.className = 'group-item';
+        div.dataset.gid = gsnap.key;
+        div.innerHTML =
+          `<div class="avatar"></div>
+           <div class="name">${g.name} (${gsnap.key})</div>`;
+        div.onclick = () => openChat(gsnap.key, g.name, true);
+        chatList.appendChild(div);
+      });
+    }
+
+    // --- Send Message ---
+    sendBtn.onclick = () => {
+      const text = messageInput.value.trim();
+      if (!text || !currentChatId) return;
+      const payload = {
+        sender: currentUser.displayName,
+        text,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      };
+      const path = isGroupChat
+        ? `groups/${currentChatId}/chats`
+        : `chats/${[currentUser.uid, currentChatId].sort().join('_')}`;
+      db.ref(path).push(payload);
+      messageInput.value = '';
+    };
+
+    // --- Open Chat ---
+    function openChat(id, name, groupFlag) {
+      currentChatId = id;
+      isGroupChat = groupFlag;
+      chatNameEl.textContent = name;
+      messagesEl.innerHTML = '';
+
+      const path = groupFlag
+        ? `groups/${id}/chats`
+        : `chats/${[currentUser.uid, id].sort().join('_')}`;
+
+      db.ref(path).off('child_added');
+      db.ref(path).on('child_added', snap => {
+        const m = snap.val();
+        const mine = (m.sender === currentUser.displayName);
+        const div = document.createElement('div');
+        div.className = `message ${mine ? 'outgoing' : 'incoming'}`;
+        div.dataset.key = snap.key;
+        div.dataset.path = path;
+        attachDeleteHandlers(div);
+
+        // always show sender name
+        div.innerHTML = `<div class="sender">${m.sender}</div>
+                         <div>${m.text}</div>
+                         <div class="time">${new Date(m.timestamp)
+                           .toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>`;
+        messagesEl.appendChild(div);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      });
+    }
+
+    // --- Delete Handlers ---
+    function attachDeleteHandlers(el) {
+      el.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        showDeleteMenu(e.pageX, e.pageY, el);
+      });
+      let timer;
+      el.addEventListener('touchstart', e => {
+        timer = setTimeout(() =>
+          showDeleteMenu(e.touches[0].pageX, e.touches[0].pageY, el),
+          600
+        );
+      });
+      el.addEventListener('touchend', () => clearTimeout(timer));
+    }
+    function showDeleteMenu(x, y, el) {
+      deleteMenu.style.display = 'block';
+      deleteMenu.style.top = y + 'px';
+      deleteMenu.style.left = x + 'px';
+      deleteMenu.dataset.key = el.dataset.key;
+      deleteMenu.dataset.path = el.dataset.path;
+    }
+    document.addEventListener('click', () => deleteMenu.style.display = 'none');
+    delForMe.onclick = () => {
+      document.querySelector(`[data-key="${deleteMenu.dataset.key}"]`).remove();
+      deleteMenu.style.display = 'none';
+    };
+    delForAll.onclick = () => {
+      db.ref(`${deleteMenu.dataset.path}/${deleteMenu.dataset.key}`).remove();
+      deleteMenu.style.display = 'none';
+    };
+
+    // --- Group Modal & Creation ---
+    groupBtn.onclick = async () => {
+      memberList.innerHTML = '';
+      const snap = await db.ref('users').once('value');
+      snap.forEach(child => {
+        const uid = child.key;
+        if (uid === currentUser.uid || !contacts[uid]) return;
+        const div = document.createElement('div');
+        div.innerHTML = `<label>
+          <input type="checkbox" value="${uid}"/>
+          ${child.val().name} (${uid})
+        </label>`;
+        memberList.appendChild(div);
+      });
+      groupModal.classList.add('active');
+    };
+    createGroupBtn.onclick = async () => {
+      const name = document.getElementById('groupNameInput').value.trim();
+      if (!name) return;
+      const members = {[currentUser.uid]: true};
+      memberList.querySelectorAll('input:checked').forEach(cb =>
+        members[cb.value] = true
+      );
+      const gid = 'group_' + Date.now();
+      await db.ref(`groups/${gid}`).set({name, members});
+      closeGroupModal();
+      loadChats();
+    };
+
+    // --- Search Filter ---
+    searchInput.addEventListener('input', () => {
+      const term = searchInput.value.toLowerCase();
+      document.querySelectorAll('.user-item, .group-item')
+        .forEach(el =>
+          el.style.display = el.querySelector('.name')
+            .textContent.toLowerCase()
+            .includes(term) ? 'flex' : 'none'
+        );
+    });
+  </script>
+</body>
+  </html>
