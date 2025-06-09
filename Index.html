@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>GConnect Chat App</title>
   <style>
     body {
@@ -25,42 +25,97 @@
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      margin-top: 20px;
+      margin-top: 10px;
     }
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding: 10px;
+      background: #1f1f1f;
+      border-bottom: 1px solid #333;
     }
     .user-list {
-      margin-top: 20px;
-      border-top: 1px solid #333;
-      padding-top: 10px;
+      padding: 10px;
     }
     .user {
-      padding: 8px;
-      border-bottom: 1px solid #333;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #1a1a1a;
+      border-radius: 5px;
       cursor: pointer;
+      transition: background 0.3s;
+    }
+    .user:hover {
+      background: #2a2a2a;
+    }
+    .user-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .user-name {
+      font-weight: bold;
+    }
+    .last-time {
+      font-size: 12px;
+      color: #bbb;
+    }
+    .last-message {
+      font-size: 14px;
+      color: #999;
+      margin-top: 4px;
+    }
+    #chat-box {
+      display: none;
+      flex-direction: column;
+    }
+    #chat-with {
+      text-align: center;
+      padding: 10px;
+      background: #1f1f1f;
+      font-size: 18px;
+      font-weight: bold;
+      border-bottom: 1px solid #333;
     }
     .messages {
+      flex: 1;
       max-height: 300px;
       overflow-y: auto;
-      background: #1e1e1e;
       padding: 10px;
-      margin-top: 10px;
-      border-radius: 5px;
+      background: #1e1e1e;
     }
     .message {
+      max-width: 80%;
       margin: 5px 0;
+      padding: 8px 12px;
+      border-radius: 10px;
+      position: relative;
+      background: #2c2c2c;
+      word-wrap: break-word;
     }
-    input[type="text"] {
-      width: 100%;
+    .own {
+      align-self: flex-end;
+      background: #0b93f6;
+    }
+    .other {
+      align-self: flex-start;
+      background: #3c3c3c;
+    }
+    .message-meta {
+      font-size: 12px;
+      color: #ccc;
+      margin-bottom: 3px;
+    }
+    #message-input {
+      width: calc(100% - 20px);
       padding: 10px;
-      margin-top: 10px;
-      border-radius: 5px;
+      margin: 10px;
       border: none;
+      border-radius: 5px;
     }
   </style>
+
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
@@ -78,15 +133,15 @@
       <button id="logout-btn">Logout</button>
     </div>
     <div class="user-list" id="user-list"></div>
-    <div id="chat-box" style="display:none;">
-      <h3 id="chat-with"></h3>
+
+    <div id="chat-box" class="chat">
+      <div id="chat-with"></div>
       <div class="messages" id="messages"></div>
-      <input type="text" id="message-input" placeholder="Type a message...">
+      <input type="text" id="message-input" placeholder="Type a message..." />
     </div>
   </div>
 
   <script>
-    // 🔥 Your Firebase Config here
     const firebaseConfig = {
       apiKey: "AIzaSyDQDghMUXcjcLufG3xU94pUx-J0r9TUu6Q",
       authDomain: "gconnect-7fe65.firebaseapp.com",
@@ -114,6 +169,7 @@
 
     let currentUser = null;
     let currentChatUser = null;
+    let currentChatId = null;
 
     googleSignInBtn.onclick = () => {
       const provider = new firebase.auth.GoogleAuthProvider();
@@ -130,73 +186,91 @@
         loginScreen.style.display = 'none';
         chatScreen.style.display = 'block';
         usernameDisplay.textContent = `Logged in as ${user.displayName}`;
+        db.ref('users/' + user.uid).set({ uid: user.uid, name: user.displayName });
 
-        // Save user info
-        db.ref('users/' + user.uid).set({
-          uid: user.uid,
-          name: user.displayName
-        });
-
-        // Load all users
-        db.ref('users').on('value', snapshot => {
-          userList.innerHTML = '<h3>Chat List</h3>';
-          snapshot.forEach(child => {
-            const u = child.val();
-            if (u.uid !== user.uid) {
-              const div = document.createElement('div');
-              div.className = 'user';
-              div.textContent = u.name;
-              div.onclick = () => startChat(u);
-              userList.appendChild(div);
-            }
-          });
-        });
-
+        loadUserList();
       } else {
         loginScreen.style.display = 'block';
         chatScreen.style.display = 'none';
       }
     });
 
+    function loadUserList() {
+      db.ref('users').on('value', async snapshot => {
+        userList.innerHTML = '<h3>Chat List</h3>';
+        snapshot.forEach(async child => {
+          const u = child.val();
+          if (u.uid !== currentUser.uid) {
+            const chatId = [currentUser.uid, u.uid].sort().join('_');
+            const msgSnap = await db.ref('messages/' + chatId).limitToLast(1).once('value');
+            let lastMsg = '', lastTime = '';
+            msgSnap.forEach(m => {
+              const data = m.val();
+              lastMsg = data.text || '';
+              const date = new Date(data.timestamp);
+              lastTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            });
+
+            const div = document.createElement('div');
+            div.className = 'user';
+            div.onclick = () => startChat(u);
+            div.innerHTML = `
+              <div class="user-info">
+                <span class="user-name">${u.name}</span>
+                <span class="last-time">${lastTime}</span>
+              </div>
+              <div class="last-message">${lastMsg}</div>
+            `;
+            userList.appendChild(div);
+          }
+        });
+      });
+    }
+
     function startChat(user) {
       currentChatUser = user;
+      currentChatId = [currentUser.uid, user.uid].sort().join('_');
       chatWith.textContent = `Chat with ${user.name}`;
-      chatBox.style.display = 'block';
+      chatBox.style.display = 'flex';
       loadMessages();
     }
 
     function loadMessages() {
-      const chatId = currentUser.uid < currentChatUser.uid
-        ? currentUser.uid + '_' + currentChatUser.uid
-        : currentChatUser.uid + '_' + currentUser.uid;
-
-      db.ref('messages/' + chatId).off(); // remove previous listener
-      db.ref('messages/' + chatId).on('value', snapshot => {
+      db.ref('messages/' + currentChatId).off();
+      db.ref('messages/' + currentChatId).on('value', snapshot => {
         messagesDiv.innerHTML = '';
         snapshot.forEach(msgSnap => {
           const msg = msgSnap.val();
           const div = document.createElement('div');
-          div.className = 'message';
-          div.textContent = `${msg.senderName}: ${msg.text}`;
+          const isOwn = msg.senderId === currentUser.uid;
+          div.className = `message ${isOwn ? 'own' : 'other'}`;
+          div.innerHTML = `
+            <div class="message-meta">${msg.senderName} • ${new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+            <div class="message-text">${msg.text}</div>
+          `;
+          div.onclick = () => {
+            if (confirm("Delete this message?\nOK = For Everyone\nCancel = Only For Me")) {
+              db.ref('messages/' + currentChatId + '/' + msgSnap.key).remove();
+            }
+          };
           messagesDiv.appendChild(div);
         });
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
       });
-
-      messageInput.onkeydown = e => {
-        if (e.key === 'Enter' && messageInput.value.trim()) {
-          const text = messageInput.value.trim();
-          const newMsg = {
-            senderId: currentUser.uid,
-            senderName: currentUser.displayName,
-            text,
-            timestamp: Date.now()
-          };
-          db.ref('messages/' + chatId).push(newMsg);
-          messageInput.value = '';
-        }
-      };
     }
+
+    messageInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && messageInput.value.trim()) {
+        const newMsg = {
+          senderId: currentUser.uid,
+          senderName: currentUser.displayName,
+          text: messageInput.value.trim(),
+          timestamp: Date.now()
+        };
+        db.ref('messages/' + currentChatId).push(newMsg);
+        messageInput.value = '';
+      }
+    });
   </script>
 </body>
 </html>
