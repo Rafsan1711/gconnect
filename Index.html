@@ -1,8 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GConnect Chat App</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -11,323 +10,234 @@
     body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #ece5dd; height: 100vh; color: #000; }
     body.dark { background: #121212; color: #eee; }
     .dark .sidebar, .dark .chat-section, .dark .modal-content { background: #1e1e1e; color: #eee; }
-    button, input { outline: none; }
+    button, input { outline: none; }/* ==== Layout Sections ==== */
+.app { display: flex; height: 100%; }
+.sidebar { width: 30%; background: #fff; border-right: 1px solid #ccc; display: flex; flex-direction: column; transition: width .3s; }
+.chat-section { width: 70%; display: none; flex-direction: column; transition: display .3s; }
+.chat-section.active { display: flex; }
+.sidebar.hidden { display: none; }
 
-    /* ==== Sidebar ==== */
-    .app { display: flex; height: 100%; }
-    .sidebar { width: 30%; background: #fff; border-right: 1px solid #ccc; display: flex; flex-direction: column; transition: width .3s; }
-    .dark .sidebar { background: #2a2a2a; border-color: #444; }
-    #header { background: #075e54; color: #fff; padding: 16px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
-    #header .toggle-btn { background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; }
-    #loginBtn { margin: 12px; padding: 12px; border: none; border-radius: 4px; cursor: pointer; background: #25d366; color: #fff; }
-    #userInfo { margin: 0 12px 12px; font-size: .9rem; color: #555; }
-    .dark #userInfo { color: #ccc; }
-    #searchInput { margin: 0 12px; padding: 8px; width: calc(100% - 24px); border-radius: 20px; border: 1px solid #ddd; }
-    .dark #searchInput { background: #333; border-color: #555; color: #eee; }
-    .list-title { margin: 12px; font-weight: bold; color: #333; }
-    .dark .list-title { color: #ccc; }
-    .chatlist { flex: 1; overflow-y: auto; margin-top: 8px; }
-    .user-item, .group-item { padding: 12px; border-bottom: 1px solid #f2f2f2; cursor: pointer; display: flex; align-items: center; }
-    .dark .user-item, .dark .group-item { border-color: #444; }
-    .user-item:hover, .group-item:hover { background: #f6f6f6; }
-    .dark .user-item:hover, .dark .group-item:hover { background: #333; }
-    .avatar { width: 36px; height: 36px; border-radius: 50%; background: #bbb; margin-right: 12px; flex-shrink: 0; }
-    .name { font-size: 1rem; color: #333; flex: 1; }
-    .dark .name { color: #eee; }
+/* ==== Sidebar ==== */
+#header { background: #075e54; color: #fff; padding: 16px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+#header .toggle-btn { background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; }
+#loginBtn { margin: 12px; padding: 12px; border: none; border-radius: 4px; cursor: pointer; background: #25d366; color: #fff; }
+#userInfo { margin: 0 12px 12px; font-size: .9rem; color: #555; }
+.dark #userInfo { color: #ccc; }
+#searchInput { margin: 0 12px; padding: 8px; width: calc(100% - 24px); border-radius: 20px; border: 1px solid #ddd; }
+.dark #searchInput { background: #333; border-color: #555; color: #eee; }
+.list-title { margin: 12px; font-weight: bold; color: #333; }
+.dark .list-title { color: #ccc; }
+.chatlist { flex: 1; overflow-y: auto; margin-top: 8px; }
+.user-item, .group-item { padding: 12px; border-bottom: 1px solid #f2f2f2; cursor: pointer; display: flex; align-items: center; }
+.dark .user-item, .dark .group-item { border-color: #444; }
+.user-item:hover, .group-item:hover { background: #f6f6f6; }
+.dark .user-item:hover, .dark .group-item:hover { background: #333; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; background: #bbb; margin-right: 12px; flex-shrink: 0; }
+.name { font-size: 1rem; color: #333; flex: 1; }
+.dark .name { color: #eee; }
 
-    /* ==== Chat Section ==== */
-    .chat-section { width: 70%; display: flex; flex-direction: column; transition: display .3s; }
-    #chatHeader { background: #075e54; color: #fff; padding: 12px 16px; display: flex; align-items: center; position: relative; }
-    #backBtn, #darkModeBtn { background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; margin-right: 12px; }
-    #typingIndicator { display: inline-flex; align-items: center; margin-left: 8px; visibility: hidden; }
-    #typingIndicator .dot { width: 6px; height: 6px; background: #fff; border-radius: 50%; margin: 0 1px; animation: bounce 1s infinite; }
-    #typingIndicator .dot:nth-child(2) { animation-delay: 0.2s; }
-    #typingIndicator .dot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes bounce { 0%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-4px); } }
+/* ==== Chat Section ==== */
+#chatHeader { background: #075e54; color: #fff; padding: 12px 16px; display: flex; align-items: center; }
+#backBtn, #darkModeBtn { background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; margin-right: 12px; }
+#typingIndicator { display: inline-flex; align-items: center; margin-left: 8px; visibility: hidden; }
+#typingIndicator .dot { width: 6px; height: 6px; background: #fff; border-radius: 50%; margin: 0 1px; animation: bounce 1s infinite; }
+@keyframes bounce { 0%,80%,100%{transform:translateY(0);}40%{transform:translateY(-4px);} }
 
-    #messages { flex: 1; padding: 16px; overflow-y: auto; background-color: #e5ddd5; display: flex; flex-direction: column; }
-    .dark #messages { background: #2c2c2c; }
-    .message { max-width: 70%; margin-bottom: 16px; padding: 10px 12px 24px; position: relative; word-wrap: break-word; border-radius: 8px; }
-    .sender { font-size: .75rem; font-weight: bold; margin-bottom: 4px; }
-    .time { font-size: .7rem; color: #666; position: absolute; bottom: 4px; right: 8px; }
-    .status { font-size: .6rem; color: #888; position: absolute; bottom: 4px; left: 8px; }
-    .incoming { background: #fff; align-self: flex-start; border-radius: 0 8px 8px 8px; }
-    .outgoing { background: #dcf8c6; align-self: flex-end; border-radius: 8px 0 8px 8px; }
-    .dark .incoming { background: #3a3a3a; }
-    .dark .outgoing { background: #256f3f; }
+#messages { flex: 1; padding: 16px; overflow-y: auto; background-color: #e5ddd5; display: flex; flex-direction: column; }
+.dark #messages { background: #2c2c2c; }
+.message { max-width: 70%; margin-bottom: 16px; padding: 10px 12px 24px; position: relative; word-wrap: break-word; border-radius: 8px; }
+.sender { font-size: .75rem; font-weight: bold; margin-bottom: 4px; }
+.time { font-size: .7rem; color: #666; position: absolute; bottom: 4px; right: 8px; }
+.status { font-size: .6rem; color: #888; position: absolute; bottom: 4px; left: 8px; }
+.incoming { background: #fff; align-self: flex-start; border-radius: 0 8px 8px 8px; }
+.outgoing { background: #dcf8c6; align-self: flex-end; border-radius: 8px 0 8px 8px; }
+.dark .incoming { background: #3a3a3a; }
+.dark .outgoing { background: #256f3f; }
 
-    .input-area { display: flex; padding: 12px; background: #f0f0f0; }
-    .dark .input-area { background: #1f1f1f; }
-    #messageInput { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ccc; }
-    .dark #messageInput { background: #333; border-color: #555; color: #eee; }
-    #fileInput { margin-left: 8px; }
-    #sendBtn { margin-left: 8px; background: #075e54; color: #fff; border-radius: 50%; width: 40px; height: 40px; border: none; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
-    #sendBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+.input-area { display: flex; padding: 12px; background: #f0f0f0; }
+.dark .input-area { background: #1f1f1f; }
+#messageInput { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ccc; }
+.dark #messageInput { background: #333; border-color: #555; color: #eee; }
+#fileInput { margin-left: 8px; }
+#sendBtn { margin-left: 8px; background: #075e54; color: #fff; border-radius: 50%; width: 40px; height: 40px; border: none; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
+#sendBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* ==== Modals & Delete Menu ==== */
-    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; }
-    .modal.active { display: flex; }
-    .modal-content { background: #fff; border-radius: 8px; width: 90%; max-width: 400px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: relative; text-align: center; }
-    .dark .modal-content { background: #2a2a2a; }
-    .close-btn { position: absolute; top: 12px; right: 16px; background: transparent; border: none; font-size: 1.2rem; cursor: pointer; }
-    .member-list { max-height: 200px; overflow-y: auto; margin-bottom: 12px; text-align: left; }
-    .member-item { margin: 6px 0; font-size: .9rem; }
+/* Responsive */
+@media (max-width:600px){ .app{flex-direction:column;} .sidebar{width:100%;height:50vh;border-right:none;border-bottom:1px solid #ccc;} .chat-section{width:100%;height:50vh;} #backBtn{display:block;} }
 
-    #deleteMenu { position: absolute; display: none; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.2); border-radius: 4px; z-index: 1000; }
-    .dark #deleteMenu { background: #2a2a2a; }
-    #deleteMenu button { width: 100%; padding: 8px 12px; background: none; border: none; text-align: left; cursor: pointer; }
-    #deleteMenu button:hover { background: #f0f0f0; }
-    .dark #deleteMenu button:hover { background: #333; }
-
-    /* ==== Responsive ==== */
-    @media (max-width: 600px) {
-      .app { flex-direction: column; }
-      .sidebar { width: 100%; height: 50vh; border-right: none; border-bottom: 1px solid #ccc; }
-      .chat-section { width: 100%; height: 50vh; display: none; }
-      #backBtn { display: block; }
-    }
   </style>
 </head>
 <body>
   <div class="app">
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <div id="header">GConnect <div>
-          <button id="darkToggle" class="toggle-btn">🌙</button>
-          <button id="groupBtn">➕</button>
-      </div></div>
+    <!-- Sidebar (Homepage) -->
+    <div class="sidebar" id="homepage">
+      <div id="header">
+        <span>GConnect</span>
+        <button id="darkModeBtn">🌙</button>
+      </div>
       <button id="loginBtn">Sign in with Google</button>
-      <div id="userInfo"></div>
-      <input type="text" id="searchInput" placeholder="Search chats..." />
-      <div class="list-title">Chats</div>
-      <div id="chatList" class="chatlist"></div>
-    </div>
-
-    <!-- Chat Section -->
-    <div class="chat-section">
-      <div id="chatHeader">
-        <button id="backBtn">←</button>
-        <div class="avatar"></div>
-        <span id="chatName">Select a chat</span>
-        <div id="typingIndicator">
-          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-        </div>
-      </div>
-      <div id="messages"></div>
-      <div class="input-area">
-        <input type="file" id="fileInput" accept="image/*" />
-        <input type="text" id="messageInput" placeholder="Type a message..." disabled />
-        <button id="sendBtn" disabled>✈️</button>
-      </div>
+      <div id="userInfo" style="display:none;"></div>
+      <input id="searchInput" type="text" placeholder="Search contacts..." style="display:none;" />
+      <div class="list-title" style="display:none;">Contacts</div>
+      <div class="chatlist" id="chatlist"></div>
+    </div><!-- Chat Section -->
+<div class="chat-section" id="chatpage">
+  <div id="chatHeader">
+    <button id="backBtn" style="display:none;">←</button>
+    <span id="chatTitle">Chat</span>
+    <div id="typingIndicator">
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
     </div>
   </div>
-
-  <!-- Group Modal -->
-  <div id="groupModal" class="modal">
-    <div class="modal-content">
-      <button class="close-btn" onclick="closeGroupModal()">×</button>
-      <h2>Create Group</h2>
-      <input id="groupNameInput" placeholder="Group name" class="w-full p-2 border rounded mb-4" />
-      <div id="memberList" class="member-list"></div>
-      <button id="createGroupBtn" class="px-4 py-2 bg-emerald-600 text-white rounded">Create</button>
-    </div>
+  <div id="messages"></div>
+  <div class="input-area">
+    <input id="messageInput" type="text" placeholder="Type a message..." />
+    <input id="fileInput" type="file" style="display:none;" />
+    <button id="sendBtn" disabled>➤</button>
   </div>
+</div>
 
-  <!-- Delete Context Menu -->
-  <div id="deleteMenu">
+  </div>  <!-- Delete Menu -->  <div id="deleteMenu" class="modal-content" style="display:none; position:absolute; z-index:1000;">
     <button id="deleteForMe">Delete for me</button>
-    <button id="deleteForEveryone">Delete for everyone</button>
-  </div>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
-
-  <script>
-    // Firebase init
-    const firebaseConfig = {
-      apiKey: "AIzaSyDQDghMUXcjcLufG3xU94pUx-J0r9TUu6Q",
-      authDomain: "gconnect-7fe65.firebaseapp.com",
-      databaseURL: "https://gconnect-7fe65-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "gconnect-7fe65",
-      storageBucket: "gconnect-7fe65.appspot.com",
-      messagingSenderId: "484729292789",
-      appId: "1:484729292789:web:8e5391b09d3581c90b02bc"
-    };
+    <button id="deleteForAll">Delete for everyone</button>
+    <button id="cancelDelete">Cancel</button>
+  </div>  <!-- Firebase & App JS -->  <script>
+    // Firebase config & initialization (unchanged)
+    const firebaseConfig = { apiKey: "AIzaSyDQDghMUXcjcLufG3xU94pUx-J0r9TUu6Q",
+    authDomain: "gconnect-7fe65.firebaseapp.com",
+    databaseURL: "https://gconnect-7fe65-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "gconnect-7fe65",
+    storageBucket: "gconnect-7fe65.appspot.com",
+    messagingSenderId: "484729292789",
+    appId: "1:484729292789:web:8e5391b09d3581c90b02bc" };
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth(), db = firebase.database(), storage = firebase.storage();
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-    // DOM
+    // Elements
+    const homepage = document.getElementById('homepage');
+    const chatpage = document.getElementById('chatpage');
     const loginBtn = document.getElementById('loginBtn');
-    const userInfoEl = document.getElementById('userInfo');
-    const searchInput= document.getElementById('searchInput');
-    const chatList = document.getElementById('chatList');
-    const chatNameEl= document.getElementById('chatName');
-    const backBtn   = document.getElementById('backBtn');
-    const messagesEl= document.getElementById('messages');
-    const messageInput= document.getElementById('messageInput');
-    const sendBtn   = document.getElementById('sendBtn');
-    const groupBtn  = document.getElementById('groupBtn');
-    const groupModal= document.getElementById('groupModal');
-    const memberList= document.getElementById('memberList');
-    const createGroupBtn = document.getElementById('createGroupBtn');
-    const deleteMenu= document.getElementById('deleteMenu');
-    const delForMe = document.getElementById('deleteForMe');
-    const delForAll= document.getElementById('deleteForEveryone');
-    const sidebar  = document.querySelector('.sidebar');
-    const chatSection = document.querySelector('.chat-section');
-    const darkToggle= document.getElementById('darkToggle');
-    const fileInput = document.getElementById('fileInput');
-
-    let currentUser=null, currentChatId=null, isGroup=false, chatUsers=[], typingTimeout;
-
-    // Dark mode toggle
-    darkToggle.onclick = () => document.body.classList.toggle('dark');
+    const userInfo = document.getElementById('userInfo');
+    const searchInput = document.getElementById('searchInput');
+    const chatlist = document.getElementById('chatlist');
+    const darkModeBtn = document.getElementById('darkModeBtn');
+    const backBtn = document.getElementById('backBtn');
+    const chatTitle = document.getElementById('chatTitle');
+    const messagesEl = document.getElementById('messages');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    
+    let currentUser = null;
+    let currentChatId = null;
 
     // Auth
-    loginBtn.onclick = () => auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
     auth.onAuthStateChanged(user => {
-      if(user){
-        currentUser=user;
-        loginBtn.style.display='none';
-        userInfoEl.textContent=`Logged in as ${user.displayName}`;
-        db.ref('users/'+user.uid).set({uid:user.uid,name:user.displayName,online:true});
-        loadChats();
-      } else loginBtn.style.display='block';
+      if (user) onLogin(user);
     });
-    window.addEventListener('beforeunload',()=>{
-      if(currentUser) db.ref('users/'+currentUser.uid+'/online').set(false);
-    });
+    loginBtn.onclick = () => auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
 
-    // Load Chats
-    function loadChats(){
-      chatList.innerHTML='';
-      db.ref('users').once('value',snap=>{
-        snap.forEach(c=>{
-          const u=c.val(); if(u.uid===currentUser.uid) return;
-          const div=document.createElement('div');
-          div.className='user-item';
-          div.dataset.uid=u.uid;
-          div.innerHTML=`<div class="avatar"></div><div class="name">${u.name}</div>`;
-          div.onclick=() => openChat([u]);
-          chatList.appendChild(div);
-        });
-      });
-      db.ref('groups').off();
-      db.ref('groups').on('value',gsnap=>{
-        document.querySelectorAll('.group-item').forEach(el=>el.remove());
-        gsnap.forEach(g=>{const grp=g.val(); if(!grp.members||!grp.members[currentUser.uid]) return;
-          const div=document.createElement('div'); div.className='group-item'; div.dataset.gid=g.key;
-          div.innerHTML=`<div class="avatar"></div><div class="name">${grp.name}</div>`;
-          div.onclick=()=> openChat(Object.keys(grp.members).map(uid=>({uid,name:uid===currentUser.uid?currentUser.displayName:grp.name})));
-          chatList.appendChild(div);
+    function onLogin(user) {
+      currentUser = user;
+      loginBtn.style.display = 'none';
+      userInfo.style.display = 'block';
+      searchInput.style.display = 'block';
+      document.querySelector('.list-title').style.display = 'block';
+      userInfo.textContent = user.displayName;
+      loadContacts();
+    }
+
+    // Load contacts
+    function loadContacts() {
+      db.collection('users').onSnapshot(snap => {
+        chatlist.innerHTML = '';
+        snap.forEach(doc => {
+          if (doc.id === currentUser.uid) return;
+          const data = doc.data();
+          const div = document.createElement('div');
+          div.className = 'user-item';
+          div.innerHTML = `<div class='avatar'>${data.displayName.charAt(0)}</div><div class='name'>${data.displayName}</div>`;
+          div.onclick = () => openChatWith(doc.id, data.displayName);
+          chatlist.appendChild(div);
         });
       });
     }
 
-    // Open Chat
-    function openChat(users){
-      isGroup = users.length>1;
-      chatUsers=[...users,{uid:currentUser.uid,name:currentUser.displayName}];
-      currentChatId=chatUsers.map(u=>u.uid).sort().join('_');
-      chatNameEl.textContent = isGroup? 'Group: '+users.map(u=>u.name).join(', '): users[0].name;
-      if(window.innerWidth<=600){ sidebar.style.display='none'; chatSection.style.display='flex'; }
-      backBtn.style.display='block'; sendBtn.disabled=false; messageInput.disabled=false; messageInput.focus();
-      loadMessages();
-      db.ref('typing/'+currentChatId).off();
-      db.ref('typing/'+currentChatId).on('value',snap=>{
-        const data=snap.val()||{}; const otherTyping=Object.keys(data).some(uid=>uid!==currentUser.uid && data[uid]);
-        document.getElementById('typingIndicator').style.visibility = otherTyping?'visible':'hidden';
-      });
+    function openChatWith(uid, name) {
+      currentChatId = [currentUser.uid, uid].sort().join('_');
+      homepage.classList.add('hidden');
+      chatpage.classList.add('active');
+      backBtn.style.display = 'inline';
+      chatTitle.textContent = name;
+      listenMessages();
     }
-    backBtn.onclick=()=>{ if(window.innerWidth<=600){ sidebar.style.display='flex'; chatSection.style.display='none'; }
-      backBtn.style.display='none'; messagesEl.innerHTML=''; messageInput.value=''; sendBtn.disabled=true; messageInput.disabled=true;
-      document.getElementById('typingIndicator').style.visibility='hidden';
-      db.ref('typing/'+currentChatId+'/'+currentUser.uid).set(false);
+    backBtn.onclick = () => {
+      chatpage.classList.remove('active');
+      homepage.classList.remove('hidden');
+      messagesEl.innerHTML = '';
     };
 
-    // Load Messages
-    function loadMessages(){
-      const path = isGroup? `groups/${currentChatId}/chats`:`chats/${currentChatId}`;
-      db.ref(path).off();
-      db.ref(path).on('value',snap=>{
-        messagesEl.innerHTML=''; snap.forEach(mSnap=>{
-          const m=mSnap.val(), mine=m.senderId===currentUser.uid;
-          const div=document.createElement('div'); div.className=`message ${mine?'outgoing':'incoming'}`;
-          let content = `<div class="sender">${m.senderName}</div>`;
-          if(m.imageURL) content += `<img src="${m.imageURL}" class="max-w-xs rounded mb-2"/>`;
-          content += `<div class="text">${m.text||''}</div>`;
-          content += `<div class="time">${new Date(m.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>`;
-          const tick = m.status==='Delivered'?'✔✔':'✔';
-          content += `<div class="status">${tick}</div>`;
-          div.innerHTML = content;
-          div.dataset.key=mSnap.key; div.dataset.path=path; attachDelete(div);
-          messagesEl.appendChild(div);
-        }); messagesEl.scrollTop = messagesEl.scrollHeight;
-      });
+    // Messages
+    function listenMessages() {
+      db.collection('chats').doc(currentChatId).collection('messages')
+        .orderBy('timestamp')
+        .onSnapshot(snap => {
+          messagesEl.innerHTML = '';
+          snap.forEach(doc => renderMessage(doc.id, doc.data()));
+        });
     }
 
-    // Send + Typing + Image
-    messageInput.addEventListener('input',()=>{
-      db.ref('typing/'+currentChatId+'/'+currentUser.uid).set(true);
-      clearTimeout(typingTimeout);
-      typingTimeout = setTimeout(()=>{ db.ref('typing/'+currentChatId+'/'+currentUser.uid).set(false); },1000);
-      sendBtn.disabled = !messageInput.value.trim() && !fileInput.files.length;
-    });
-    fileInput.onchange = async ()=>{
-      if(fileInput.files.length){ sendBtn.disabled=false; }
-    };
-    sendBtn.onclick = async ()=>{
+    function renderMessage(id, msg) {
+      const div = document.createElement('div');
+      div.className = `message ${msg.sender===currentUser.uid? 'outgoing':'incoming'}`;
+      div.innerHTML = `<div class='sender'>${msg.senderName||''}</div><div>${msg.text}</div><div class='time'>${new Date(msg.timestamp?.toDate()).toLocaleTimeString()}</div>`;
+      div.oncontextmenu = e => showDeleteMenu(e, id, msg.sender===currentUser.uid);
+      messagesEl.appendChild(div);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    // Sending
+    messageInput.oninput = () => sendBtn.disabled = !messageInput.value.trim();
+    sendBtn.onclick = async () => {
       const text = messageInput.value.trim();
-      let imageURL = '';
-      if(fileInput.files.length){
-        const file = fileInput.files[0];
-        const storageRef = storage.ref().child('images/'+Date.now()+'_'+file.name);
-        await storageRef.put(file);
-        imageURL = await storageRef.getDownloadURL();
-      }
-      if(!text && !imageURL) return;
-      const msg = { senderId:currentUser.uid, senderName:currentUser.displayName, text, imageURL, timestamp:Date.now(), status:'Sent' };
-      const ref = db.ref((isGroup? `groups/${currentChatId}/chats`:`chats/${currentChatId}`)).push(msg);
-      messageInput.value=''; fileInput.value=''; sendBtn.disabled=true;
-      db.ref('typing/'+currentChatId+'/'+currentUser.uid).set(false);
-      ref.then(r=> r.update({ status:'Delivered' }));
+      if (!text) return;
+      await db.collection('chats').doc(currentChatId).collection('messages').add({
+        sender: currentUser.uid,
+        senderName: currentUser.displayName,
+        text,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      messageInput.value = '';
+      sendBtn.disabled = true;
     };
 
-    // Delete
-    function attachDelete(el){ el.addEventListener('contextmenu', e=>{
-      e.preventDefault(); deleteMenu.style.display='block'; deleteMenu.style.top=e.pageY+'px'; deleteMenu.style.left=e.pageX+'px';
-      deleteMenu.dataset.key=el.dataset.key; deleteMenu.dataset.path=el.dataset.path;
-    }); }
-    document.addEventListener('click',()=> deleteMenu.style.display='none');
-    delForMe.onclick = ()=>{ document.querySelector(`[data-key="${deleteMenu.dataset.key}"]`).remove(); deleteMenu.style.display='none'; };
-    delForAll.onclick = ()=>{ db.ref(`${deleteMenu.dataset.path}/${deleteMenu.dataset.key}`).remove(); deleteMenu.style.display='none'; };
+    // Delete menu
+    const deleteMenu = document.getElementById('deleteMenu');
+    function showDeleteMenu(e, msgId, isMine) {
+      e.preventDefault();
+      deleteMenu.style.top = e.pageY + 'px';
+      deleteMenu.style.left = e.pageX + 'px';
+      deleteMenu.style.display = 'block';
+      document.getElementById('deleteForAll').style.display = isMine? 'block':'none';
+      document.getElementById('deleteForMe').onclick = () => deleteForMe(msgId);
+      document.getElementById('deleteForAll').onclick = () => deleteForAll(msgId);
+      document.getElementById('cancelDelete').onclick = hideDeleteMenu;
+    }
+    function hideDeleteMenu() { deleteMenu.style.display='none'; }
+    async function deleteForMe(msgId) {
+      await db.collection('chats').doc(currentChatId).collection('messages').doc(msgId)
+        .update({ deletedFor: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)});
+      hideDeleteMenu();
+    }
+    async function deleteForAll(msgId) {
+      await db.collection('chats').doc(currentChatId).collection('messages').doc(msgId).delete();
+      hideDeleteMenu();
+    }
 
-    // Group Modal
-    groupBtn.onclick = async ()=>{
-      memberList.innerHTML=''; const snap = await db.ref('users').once('value');
-      snap.forEach(c=>{ const u=c.val(); if(u.uid===currentUser.uid) return;
-        const div=document.createElement('div'); div.className='member-item';
-        div.innerHTML=`<label><input type="checkbox" value="${u.uid}"/> ${u.name}</label>`;
-        memberList.appendChild(div);
-      }); groupModal.classList.add('active');
-    };
-    window.closeGroupModal = ()=> groupModal.classList.remove('active');
-    createGroupBtn.onclick = async ()=>{
-      const name = document.getElementById('groupNameInput').value.trim(); if(!name) return;
-      const members={ [currentUser.uid]:true };
-      memberList.querySelectorAll('input:checked').forEach(cb=> members[cb.value]=true);
-      await db.ref('groups/'+currentChatId).set({ name, members });
-      closeGroupModal(); loadChats();
-    };
+    // Dark mode toggle
+    darkModeBtn.onclick = () => document.body.classList.toggle('dark');
 
-    // Search
-    searchInput.addEventListener('input',()=>{
-      const term = searchInput.value.toLowerCase();
-      document.querySelectorAll('.user-item, .group-item').forEach(el=> el.style.display = el.querySelector('.name').textContent.toLowerCase().includes(term)? 'flex':'none');
-    });
-  </script>
-</body>
-  </html>
+    // Ensure root chat doc exists on send
+    db.collection('chats').doc(currentChatId).set({ participants: currentChatId.split('_') }, { merge:true });
+  </script></body>
+    </html>
