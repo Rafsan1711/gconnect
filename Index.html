@@ -4,34 +4,41 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>GConnect Chat App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* ==== Reset & Base ==== */
+    /* ==== Base & Dark Mode ==== */
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #ece5dd; height: 100vh; }
-    .app { display: flex; height: 100%; }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #ece5dd; height: 100vh; color: #000; }
+    body.dark { background: #121212; color: #eee; }
+    .dark .sidebar, .dark .chat-section, .dark .modal-content { background: #1e1e1e; color: #eee; }
+    button, input { outline: none; }
 
     /* ==== Sidebar ==== */
+    .app { display: flex; height: 100%; }
     .sidebar { width: 30%; background: #fff; border-right: 1px solid #ccc; display: flex; flex-direction: column; transition: width .3s; }
+    .dark .sidebar { background: #2a2a2a; border-color: #444; }
     #header { background: #075e54; color: #fff; padding: 16px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
-    #header button { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
+    #header .toggle-btn { background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; }
     #loginBtn { margin: 12px; padding: 12px; border: none; border-radius: 4px; cursor: pointer; background: #25d366; color: #fff; }
     #userInfo { margin: 0 12px 12px; font-size: .9rem; color: #555; }
+    .dark #userInfo { color: #ccc; }
     #searchInput { margin: 0 12px; padding: 8px; width: calc(100% - 24px); border-radius: 20px; border: 1px solid #ddd; }
+    .dark #searchInput { background: #333; border-color: #555; color: #eee; }
     .list-title { margin: 12px; font-weight: bold; color: #333; }
+    .dark .list-title { color: #ccc; }
     .chatlist { flex: 1; overflow-y: auto; margin-top: 8px; }
     .user-item, .group-item { padding: 12px; border-bottom: 1px solid #f2f2f2; cursor: pointer; display: flex; align-items: center; }
+    .dark .user-item, .dark .group-item { border-color: #444; }
     .user-item:hover, .group-item:hover { background: #f6f6f6; }
-    .avatar { width: 36px; height: 36px; border-radius: 50%; background: #bbb; margin-right: 12px; }
+    .dark .user-item:hover, .dark .group-item:hover { background: #333; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: #bbb; margin-right: 12px; flex-shrink: 0; }
     .name { font-size: 1rem; color: #333; flex: 1; }
-    .last-msg { font-size: .8rem; color: #666; }
-    .last-time { font-size: .7rem; color: #999; }
+    .dark .name { color: #eee; }
 
     /* ==== Chat Section ==== */
-    .chat-section { width: 70%; display: flex; flex-direction: column; }
+    .chat-section { width: 70%; display: flex; flex-direction: column; transition: display .3s; }
     #chatHeader { background: #075e54; color: #fff; padding: 12px 16px; display: flex; align-items: center; position: relative; }
-    #backBtn { background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; margin-right: 12px; display: none; }
-    #chatHeader .avatar { width: 32px; height: 32px; border-radius: 50%; background: #bbb; margin-right: 12px; }
-    #chatHeader span { font-weight: bold; flex: 1; }
+    #backBtn, #darkModeBtn { background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; margin-right: 12px; }
     #typingIndicator { display: inline-flex; align-items: center; margin-left: 8px; visibility: hidden; }
     #typingIndicator .dot { width: 6px; height: 6px; background: #fff; border-radius: 50%; margin: 0 1px; animation: bounce 1s infinite; }
     #typingIndicator .dot:nth-child(2) { animation-delay: 0.2s; }
@@ -39,31 +46,40 @@
     @keyframes bounce { 0%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-4px); } }
 
     #messages { flex: 1; padding: 16px; overflow-y: auto; background-color: #e5ddd5; display: flex; flex-direction: column; }
+    .dark #messages { background: #2c2c2c; }
     .message { max-width: 70%; margin-bottom: 16px; padding: 10px 12px 24px; position: relative; word-wrap: break-word; border-radius: 8px; }
     .sender { font-size: .75rem; font-weight: bold; margin-bottom: 4px; }
     .time { font-size: .7rem; color: #666; position: absolute; bottom: 4px; right: 8px; }
+    .status { font-size: .6rem; color: #888; position: absolute; bottom: 4px; left: 8px; }
     .incoming { background: #fff; align-self: flex-start; border-radius: 0 8px 8px 8px; }
     .outgoing { background: #dcf8c6; align-self: flex-end; border-radius: 8px 0 8px 8px; }
-    .status { font-size: .6rem; color: #888; position: absolute; bottom: 4px; left: 8px; }
+    .dark .incoming { background: #3a3a3a; }
+    .dark .outgoing { background: #256f3f; }
 
     .input-area { display: flex; padding: 12px; background: #f0f0f0; }
-    #messageInput { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ccc; outline: none; }
-    #sendBtn { margin-left: 8px; background: #075e54; color: #fff; border-radius: 50%; width: 40px; height: 40px; border: none; cursor: pointer; font-size: 1.2rem; }
+    .dark .input-area { background: #1f1f1f; }
+    #messageInput { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ccc; }
+    .dark #messageInput { background: #333; border-color: #555; color: #eee; }
+    #fileInput { margin-left: 8px; }
+    #sendBtn { margin-left: 8px; background: #075e54; color: #fff; border-radius: 50%; width: 40px; height: 40px; border: none; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
+    #sendBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* ==== Modals ==== */
+    /* ==== Modals & Delete Menu ==== */
     .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; }
     .modal.active { display: flex; }
     .modal-content { background: #fff; border-radius: 8px; width: 90%; max-width: 400px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: relative; text-align: center; }
+    .dark .modal-content { background: #2a2a2a; }
     .close-btn { position: absolute; top: 12px; right: 16px; background: transparent; border: none; font-size: 1.2rem; cursor: pointer; }
     .member-list { max-height: 200px; overflow-y: auto; margin-bottom: 12px; text-align: left; }
     .member-item { margin: 6px 0; font-size: .9rem; }
 
-    /* ==== Delete Menu ==== */
     #deleteMenu { position: absolute; display: none; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.2); border-radius: 4px; z-index: 1000; }
+    .dark #deleteMenu { background: #2a2a2a; }
     #deleteMenu button { width: 100%; padding: 8px 12px; background: none; border: none; text-align: left; cursor: pointer; }
     #deleteMenu button:hover { background: #f0f0f0; }
+    .dark #deleteMenu button:hover { background: #333; }
 
-    /* ==== Responsive: Mobile ==== */
+    /* ==== Responsive ==== */
     @media (max-width: 600px) {
       .app { flex-direction: column; }
       .sidebar { width: 100%; height: 50vh; border-right: none; border-bottom: 1px solid #ccc; }
@@ -76,7 +92,10 @@
   <div class="app">
     <!-- Sidebar -->
     <div class="sidebar">
-      <div id="header">GConnect <button id="groupBtn">+</button></div>
+      <div id="header">GConnect <div>
+          <button id="darkToggle" class="toggle-btn">🌙</button>
+          <button id="groupBtn">➕</button>
+      </div></div>
       <button id="loginBtn">Sign in with Google</button>
       <div id="userInfo"></div>
       <input type="text" id="searchInput" placeholder="Search chats..." />
@@ -87,7 +106,7 @@
     <!-- Chat Section -->
     <div class="chat-section">
       <div id="chatHeader">
-        <button id="backBtn">&larr;</button>
+        <button id="backBtn">←</button>
         <div class="avatar"></div>
         <span id="chatName">Select a chat</span>
         <div id="typingIndicator">
@@ -96,6 +115,7 @@
       </div>
       <div id="messages"></div>
       <div class="input-area">
+        <input type="file" id="fileInput" accept="image/*" />
         <input type="text" id="messageInput" placeholder="Type a message..." disabled />
         <button id="sendBtn" disabled>✈️</button>
       </div>
@@ -105,11 +125,11 @@
   <!-- Group Modal -->
   <div id="groupModal" class="modal">
     <div class="modal-content">
-      <button class="close-btn" onclick="closeGroupModal()">&times;</button>
+      <button class="close-btn" onclick="closeGroupModal()">×</button>
       <h2>Create Group</h2>
-      <input id="groupNameInput" placeholder="Group name" style="width:100%; padding:8px; margin-bottom:12px; border:1px solid #ddd; border-radius:4px;" />
+      <input id="groupNameInput" placeholder="Group name" class="w-full p-2 border rounded mb-4" />
       <div id="memberList" class="member-list"></div>
-      <button id="createGroupBtn" class="confirm-btn">Create</button>
+      <button id="createGroupBtn" class="px-4 py-2 bg-emerald-600 text-white rounded">Create</button>
     </div>
   </div>
 
@@ -123,240 +143,190 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
 
   <script>
     // Firebase init
     const firebaseConfig = {
-      apiKey:    "AIzaSyDQDghMUXcjcLufG3xU94pUx-J0r9TUu6Q",
-      authDomain:"gconnect-7fe65.firebaseapp.com",
-      databaseURL:"https://gconnect-7fe65-default-rtdb.asia-southeast1.firebasedatabase.app",
+      apiKey: "AIzaSyDQDghMUXcjcLufG3xU94pUx-J0r9TUu6Q",
+      authDomain: "gconnect-7fe65.firebaseapp.com",
+      databaseURL: "https://gconnect-7fe65-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "gconnect-7fe65",
-      storageBucket:"gconnect-7fe65.appspot.com",
-      messagingSenderId:"484729292789",
-      appId:     "1:484729292789:web:8e5391b09d3581c90b02bc"
+      storageBucket: "gconnect-7fe65.appspot.com",
+      messagingSenderId: "484729292789",
+      appId: "1:484729292789:web:8e5391b09d3581c90b02bc"
     };
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth(), db = firebase.database();
+    const auth = firebase.auth(), db = firebase.database(), storage = firebase.storage();
 
     // DOM
-    const loginBtn     = document.getElementById('loginBtn'),
-          userInfoEl   = document.getElementById('userInfo'),
-          searchInput  = document.getElementById('searchInput'),
-          chatList     = document.getElementById('chatList'),
-          chatNameEl   = document.getElementById('chatName'),
-          typingEl     = document.getElementById('typingIndicator'),
-          backBtn      = document.getElementById('backBtn'),
-          messagesEl   = document.getElementById('messages'),
-          messageInput = document.getElementById('messageInput'),
-          sendBtn      = document.getElementById('sendBtn'),
-          groupBtn     = document.getElementById('groupBtn'),
-          groupModal   = document.getElementById('groupModal'),
-          memberList   = document.getElementById('memberList'),
-          createGroupBtn = document.getElementById('createGroupBtn'),
-          deleteMenu   = document.getElementById('deleteMenu'),
-          delForMe     = document.getElementById('deleteForMe'),
-          delForAll    = document.getElementById('deleteForEveryone'),
-          sidebar      = document.querySelector('.sidebar'),
-          chatSection  = document.querySelector('.chat-section');
+    const loginBtn = document.getElementById('loginBtn');
+    const userInfoEl = document.getElementById('userInfo');
+    const searchInput= document.getElementById('searchInput');
+    const chatList = document.getElementById('chatList');
+    const chatNameEl= document.getElementById('chatName');
+    const backBtn   = document.getElementById('backBtn');
+    const messagesEl= document.getElementById('messages');
+    const messageInput= document.getElementById('messageInput');
+    const sendBtn   = document.getElementById('sendBtn');
+    const groupBtn  = document.getElementById('groupBtn');
+    const groupModal= document.getElementById('groupModal');
+    const memberList= document.getElementById('memberList');
+    const createGroupBtn = document.getElementById('createGroupBtn');
+    const deleteMenu= document.getElementById('deleteMenu');
+    const delForMe = document.getElementById('deleteForMe');
+    const delForAll= document.getElementById('deleteForEveryone');
+    const sidebar  = document.querySelector('.sidebar');
+    const chatSection = document.querySelector('.chat-section');
+    const darkToggle= document.getElementById('darkToggle');
+    const fileInput = document.getElementById('fileInput');
 
-    let currentUser=null, currentChatId=null, isGroup=false, chatUsers=[],
-        typingTimeout;
+    let currentUser=null, currentChatId=null, isGroup=false, chatUsers=[], typingTimeout;
+
+    // Dark mode toggle
+    darkToggle.onclick = () => document.body.classList.toggle('dark');
 
     // Auth
     loginBtn.onclick = () => auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
     auth.onAuthStateChanged(user => {
-      if (user) {
-        currentUser = user;
-        loginBtn.style.display = 'none';
-        userInfoEl.textContent = `Logged in as ${user.displayName}`;
+      if(user){
+        currentUser=user;
+        loginBtn.style.display='none';
+        userInfoEl.textContent=`Logged in as ${user.displayName}`;
         db.ref('users/'+user.uid).set({uid:user.uid,name:user.displayName,online:true});
         loadChats();
-      } else {
-        loginBtn.style.display = 'block';
-      }
+      } else loginBtn.style.display='block';
     });
-    window.addEventListener('beforeunload', ()=> {
-      if (currentUser) db.ref('users/'+currentUser.uid+'/online').set(false);
+    window.addEventListener('beforeunload',()=>{
+      if(currentUser) db.ref('users/'+currentUser.uid+'/online').set(false);
     });
 
     // Load Chats
-    function loadChats() {
-      chatList.innerHTML = '';
-      // one-on-one
-      db.ref('users').once('value', snap => {
-        snap.forEach(c => {
-          const u = c.val();
-          if (u.uid === currentUser.uid) return;
-          const div = document.createElement('div');
-          div.className = 'user-item';
-          div.dataset.uid = u.uid;
-          div.innerHTML = `<div class="avatar"></div><div class="name">${u.name}</div>`;
-          div.onclick = () => openChat([u]);
+    function loadChats(){
+      chatList.innerHTML='';
+      db.ref('users').once('value',snap=>{
+        snap.forEach(c=>{
+          const u=c.val(); if(u.uid===currentUser.uid) return;
+          const div=document.createElement('div');
+          div.className='user-item';
+          div.dataset.uid=u.uid;
+          div.innerHTML=`<div class="avatar"></div><div class="name">${u.name}</div>`;
+          div.onclick=() => openChat([u]);
           chatList.appendChild(div);
         });
       });
-      // groups
       db.ref('groups').off();
-      db.ref('groups').on('value', gsnap => {
+      db.ref('groups').on('value',gsnap=>{
         document.querySelectorAll('.group-item').forEach(el=>el.remove());
-        gsnap.forEach(g => {
-          const grp = g.val();
-          if (!grp.members || !grp.members[currentUser.uid]) return;
-          const div = document.createElement('div');
-          div.className = 'group-item';
-          div.dataset.gid = g.key;
-          div.innerHTML = `<div class="avatar"></div><div class="name">${grp.name}</div>`;
-          div.onclick = () => {
-            const members = Object.keys(grp.members).map(uid => ({ uid, name: uid===currentUser.uid ? currentUser.displayName : grp.name }));
-            openChat(members);
-          };
+        gsnap.forEach(g=>{const grp=g.val(); if(!grp.members||!grp.members[currentUser.uid]) return;
+          const div=document.createElement('div'); div.className='group-item'; div.dataset.gid=g.key;
+          div.innerHTML=`<div class="avatar"></div><div class="name">${grp.name}</div>`;
+          div.onclick=()=> openChat(Object.keys(grp.members).map(uid=>({uid,name:uid===currentUser.uid?currentUser.displayName:grp.name})));
           chatList.appendChild(div);
         });
       });
     }
 
-    // Open Chat & Typing Listeners
-    function openChat(users) {
-      isGroup = users.length > 1;
-      chatUsers = [...users, { uid: currentUser.uid, name: currentUser.displayName }];
-      currentChatId = chatUsers.map(u => u.uid).sort().join('_');
-      chatNameEl.textContent = isGroup
-        ? 'Group: ' + users.map(u => u.name).join(', ')
-        : users[0].name;
-      // toggle on mobile
-      if (window.innerWidth <= 600) {
-        sidebar.style.display = 'none';
-        chatSection.style.display = 'flex';
-      }
-      backBtn.style.display = 'block';
-      messageInput.disabled = false;
-      sendBtn.disabled = false;
-
-      // listen messages
+    // Open Chat
+    function openChat(users){
+      isGroup = users.length>1;
+      chatUsers=[...users,{uid:currentUser.uid,name:currentUser.displayName}];
+      currentChatId=chatUsers.map(u=>u.uid).sort().join('_');
+      chatNameEl.textContent = isGroup? 'Group: '+users.map(u=>u.name).join(', '): users[0].name;
+      if(window.innerWidth<=600){ sidebar.style.display='none'; chatSection.style.display='flex'; }
+      backBtn.style.display='block'; sendBtn.disabled=false; messageInput.disabled=false; messageInput.focus();
       loadMessages();
-      // listen typing
-      db.ref('typing/' + currentChatId).off();
-      db.ref('typing/' + currentChatId).on('value', snap => {
-        const data = snap.val() || {};
-        // show if any other user typing
-        const otherTyping = Object.keys(data).some(uid => uid !== currentUser.uid && data[uid]);
-        typingEl.style.visibility = otherTyping ? 'visible' : 'hidden';
+      db.ref('typing/'+currentChatId).off();
+      db.ref('typing/'+currentChatId).on('value',snap=>{
+        const data=snap.val()||{}; const otherTyping=Object.keys(data).some(uid=>uid!==currentUser.uid && data[uid]);
+        document.getElementById('typingIndicator').style.visibility = otherTyping?'visible':'hidden';
       });
     }
-    backBtn.onclick = () => {
-      if (window.innerWidth <= 600) {
-        sidebar.style.display = 'flex';
-        chatSection.style.display = 'none';
-      }
-      backBtn.style.display = 'none';
-      messagesEl.innerHTML = '';
-      messageInput.value = '';
-      sendBtn.disabled = true;
-      messageInput.disabled = true;
-      typingEl.style.visibility = 'hidden';
-      db.ref('typing/' + currentChatId + '/' + currentUser.uid).set(false);
+    backBtn.onclick=()=>{ if(window.innerWidth<=600){ sidebar.style.display='flex'; chatSection.style.display='none'; }
+      backBtn.style.display='none'; messagesEl.innerHTML=''; messageInput.value=''; sendBtn.disabled=true; messageInput.disabled=true;
+      document.getElementById('typingIndicator').style.visibility='hidden';
+      db.ref('typing/'+currentChatId+'/'+currentUser.uid).set(false);
     };
 
     // Load Messages
-    function loadMessages() {
-      const path = isGroup
-        ? `groups/${currentChatId}/chats`
-        : `chats/${currentChatId}`;
+    function loadMessages(){
+      const path = isGroup? `groups/${currentChatId}/chats`:`chats/${currentChatId}`;
       db.ref(path).off();
-      db.ref(path).on('value', snap => {
-        messagesEl.innerHTML = '';
-        snap.forEach(mSnap => {
-          const m = mSnap.val();
-          const mine = m.senderId === currentUser.uid;
-          const div = document.createElement('div');
-          div.className = `message ${mine ? 'outgoing' : 'incoming'}`;
-          div.dataset.key = mSnap.key;
-          div.dataset.path = path;
-          div.innerHTML = `
-            <div class="sender">${m.senderName}</div>
-            <div class="text">${m.text || '[Image]'}</div>
-            <div class="time">${new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-            <div class="status">${m.status || ''}</div>
-          `;
-          attachDelete(div);
+      db.ref(path).on('value',snap=>{
+        messagesEl.innerHTML=''; snap.forEach(mSnap=>{
+          const m=mSnap.val(), mine=m.senderId===currentUser.uid;
+          const div=document.createElement('div'); div.className=`message ${mine?'outgoing':'incoming'}`;
+          let content = `<div class="sender">${m.senderName}</div>`;
+          if(m.imageURL) content += `<img src="${m.imageURL}" class="max-w-xs rounded mb-2"/>`;
+          content += `<div class="text">${m.text||''}</div>`;
+          content += `<div class="time">${new Date(m.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>`;
+          const tick = m.status==='Delivered'?'✔✔':'✔';
+          content += `<div class="status">${tick}</div>`;
+          div.innerHTML = content;
+          div.dataset.key=mSnap.key; div.dataset.path=path; attachDelete(div);
           messagesEl.appendChild(div);
-        });
-        messagesEl.scrollTop = messagesEl.scrollHeight;
+        }); messagesEl.scrollTop = messagesEl.scrollHeight;
       });
     }
 
-    // Send + Typing logic
-    messageInput.addEventListener('input', () => {
-      // set typing true
-      db.ref('typing/' + currentChatId + '/' + currentUser.uid).set(true);
+    // Send + Typing + Image
+    messageInput.addEventListener('input',()=>{
+      db.ref('typing/'+currentChatId+'/'+currentUser.uid).set(true);
       clearTimeout(typingTimeout);
-      typingTimeout = setTimeout(() => {
-        db.ref('typing/' + currentChatId + '/' + currentUser.uid).set(false);
-      }, 1000);
+      typingTimeout = setTimeout(()=>{ db.ref('typing/'+currentChatId+'/'+currentUser.uid).set(false); },1000);
+      sendBtn.disabled = !messageInput.value.trim() && !fileInput.files.length;
     });
-    sendBtn.onclick = () => {
-      const txt = messageInput.value.trim(); if (!txt) return;
-      const msg = { senderId: currentUser.uid, senderName: currentUser.displayName, text: txt, timestamp: Date.now(), status: 'Sent' };
-      const ref = db.ref((isGroup ? `groups/${currentChatId}/chats` : `chats/${currentChatId}`)).push(msg);
-      messageInput.value = '';
-      db.ref('typing/' + currentChatId + '/' + currentUser.uid).set(false);
-      ref.then(r => r.update({ status: 'Delivered' }));
+    fileInput.onchange = async ()=>{
+      if(fileInput.files.length){ sendBtn.disabled=false; }
+    };
+    sendBtn.onclick = async ()=>{
+      const text = messageInput.value.trim();
+      let imageURL = '';
+      if(fileInput.files.length){
+        const file = fileInput.files[0];
+        const storageRef = storage.ref().child('images/'+Date.now()+'_'+file.name);
+        await storageRef.put(file);
+        imageURL = await storageRef.getDownloadURL();
+      }
+      if(!text && !imageURL) return;
+      const msg = { senderId:currentUser.uid, senderName:currentUser.displayName, text, imageURL, timestamp:Date.now(), status:'Sent' };
+      const ref = db.ref((isGroup? `groups/${currentChatId}/chats`:`chats/${currentChatId}`)).push(msg);
+      messageInput.value=''; fileInput.value=''; sendBtn.disabled=true;
+      db.ref('typing/'+currentChatId+'/'+currentUser.uid).set(false);
+      ref.then(r=> r.update({ status:'Delivered' }));
     };
 
-    // Delete handlers
-    function attachDelete(el) {
-      el.addEventListener('contextmenu', e => {
-        e.preventDefault();
-        showDeleteMenu(e.pageX, e.pageY, el);
-      });
-    }
-    function showDeleteMenu(x, y, el) {
-      deleteMenu.style.display = 'block';
-      deleteMenu.style.top = y + 'px';
-      deleteMenu.style.left = x + 'px';
-      deleteMenu.dataset.key = el.dataset.key;
-      deleteMenu.dataset.path = el.dataset.path;
-    }
-    document.addEventListener('click', () => deleteMenu.style.display = 'none');
-    delForMe.onclick = () => {
-      document.querySelector(`[data-key="${deleteMenu.dataset.key}"]`).remove();
-      deleteMenu.style.display = 'none';
-    };
-    delForAll.onclick = () => {
-      db.ref(`${deleteMenu.dataset.path}/${deleteMenu.dataset.key}`).remove();
-      deleteMenu.style.display = 'none';
-    };
+    // Delete
+    function attachDelete(el){ el.addEventListener('contextmenu', e=>{
+      e.preventDefault(); deleteMenu.style.display='block'; deleteMenu.style.top=e.pageY+'px'; deleteMenu.style.left=e.pageX+'px';
+      deleteMenu.dataset.key=el.dataset.key; deleteMenu.dataset.path=el.dataset.path;
+    }); }
+    document.addEventListener('click',()=> deleteMenu.style.display='none');
+    delForMe.onclick = ()=>{ document.querySelector(`[data-key="${deleteMenu.dataset.key}"]`).remove(); deleteMenu.style.display='none'; };
+    delForAll.onclick = ()=>{ db.ref(`${deleteMenu.dataset.path}/${deleteMenu.dataset.key}`).remove(); deleteMenu.style.display='none'; };
 
-    // Group modal
-    groupBtn.onclick = async () => {
-      memberList.innerHTML = '';
-      const snap = await db.ref('users').once('value');
-      snap.forEach(c => {
-        const u = c.val();
-        if (u.uid === currentUser.uid) return;
-        const div = document.createElement('div');
-        div.className = 'member-item';
-        div.innerHTML = `<label><input type="checkbox" value="${u.uid}"> ${u.name}</label>`;
+    // Group Modal
+    groupBtn.onclick = async ()=>{
+      memberList.innerHTML=''; const snap = await db.ref('users').once('value');
+      snap.forEach(c=>{ const u=c.val(); if(u.uid===currentUser.uid) return;
+        const div=document.createElement('div'); div.className='member-item';
+        div.innerHTML=`<label><input type="checkbox" value="${u.uid}"/> ${u.name}</label>`;
         memberList.appendChild(div);
-      });
-      groupModal.classList.add('active');
+      }); groupModal.classList.add('active');
     };
-    window.closeGroupModal = () => groupModal.classList.remove('active');
-    createGroupBtn.onclick = async () => {
-      const name = document.getElementById('groupNameInput').value.trim(); if (!name) return;
-      const members = { [currentUser.uid]: true };
-      memberList.querySelectorAll('input:checked').forEach(cb => members[cb.value] = true);
-      await db.ref(`groups/${currentChatId}`).set({ name, members });
-      closeGroupModal();
-      loadChats();
+    window.closeGroupModal = ()=> groupModal.classList.remove('active');
+    createGroupBtn.onclick = async ()=>{
+      const name = document.getElementById('groupNameInput').value.trim(); if(!name) return;
+      const members={ [currentUser.uid]:true };
+      memberList.querySelectorAll('input:checked').forEach(cb=> members[cb.value]=true);
+      await db.ref('groups/'+currentChatId).set({ name, members });
+      closeGroupModal(); loadChats();
     };
 
-    // Search filter
-    searchInput.addEventListener('input', () => {
+    // Search
+    searchInput.addEventListener('input',()=>{
       const term = searchInput.value.toLowerCase();
-      document.querySelectorAll('.user-item, .group-item').forEach(el =>
-        el.style.display = el.querySelector('.name').textContent.toLowerCase().includes(term) ? 'flex' : 'none'
-      );
+      document.querySelectorAll('.user-item, .group-item').forEach(el=> el.style.display = el.querySelector('.name').textContent.toLowerCase().includes(term)? 'flex':'none');
     });
   </script>
 </body>
